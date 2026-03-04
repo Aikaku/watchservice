@@ -1,0 +1,97 @@
+main/
+├── java/
+│   └── com/
+│       └── watchserviceagent/
+│           └── watchservice_agent/
+│               ├── ai/
+│               │   ├── domain/
+│               │   │   └── AiResult.java
+│               │   ├── dto/
+│               │   │   ├── AiPayload.java
+│               │   │   ├── AiResponse.java
+│               │   │   ├── FamilyPredictRequest.java
+│               │   │   └── FamilyPredictResponse.java
+│               │   ├── AiController.java
+│               │   └── AiService.java
+│               ├── alerts/
+│               │   ├── dto/
+│               │   │   ├── AlertPageResponse.java
+│               │   │   └── AlertStatsResponse.java
+│               │   ├── AlertController.java
+│               │   └── AlertService.java
+│               ├── analytics/
+│               │   └── EventWindowAggregator.java
+│               ├── collector/
+│               │   ├── business/
+│               │   │   ├── EntropyAnalyzer.java
+│               │   │   └── HashCalculator.java
+│               │   ├── dto/
+│               │   │   └── FileAnalysisResult.java
+│               │   ├── snapshot/
+│               │   │   ├── FileSnapshotStore.java
+│               │   │   └── SnapshotConfig.java
+│               │   └── FileCollectorService.java
+│               ├── common/
+│               │   ├── config/
+│               │   │   └── WebConfig.java
+│               │   └── util/
+│               │       └── SessionIdManager.java
+│               ├── dashboard/
+│               │   ├── dto/
+│               │   │   └── DashboardSummaryResponse.java
+│               │   └── DashboardController.java
+│               ├── scan/
+│               │   ├── domain/
+│               │   │   ├── ScanJob.java
+│               │   │   └── ScanStatus.java
+│               │   ├── dto/
+│               │   │   ├── ScanProgressResponse.java
+│               │   │   ├── ScanStartRequest.java
+│               │   │   └── ScanStartResponse.java
+│               │   ├── ScanController.java
+│               │   └── ScanService.java
+│               ├── settings/
+│               │   ├── domain/
+│               │   │   ├── ExceptionRule.java
+│               │   │   └── WatchedFolder.java
+│               │   ├── dto/
+│               │   │   ├── ExceptionRuleRequest.java
+│               │   │   ├── ExceptionRuleResponse.java
+│               │   │   ├── WatchedFolderRequest.java
+│               │   │   └── WatchedFolderResponse.java
+│               │   ├── SettingsController.java
+│               │   ├── SettingsRepository.java
+│               │   └── SettingsService.java
+│               ├── storage/
+│               │   ├── domain/
+│               │   │   └── Log.java
+│               │   ├── dto/
+│               │   │   ├── LogDeleteRequest.java
+│               │   │   ├── LogDeleteResponse.java
+│               │   │   ├── LogExportRequest.java
+│               │   │   ├── LogPageResponse.java
+│               │   │   └── LogResponse.java
+│               │   ├── LogController.java
+│               │   ├── LogRepository.java
+│               │   ├── LogService.java
+│               │   └── LogWriterWorker.java
+│               ├── support/
+│               │   ├── domain/
+│               │   │   └── FeedbackTicket.java
+│               │   ├── dto/
+│               │   │   ├── FeedbackRequest.java
+│               │   │   └── FeedbackResponse.java
+│               │   ├── SupportController.java
+│               │   ├── SupportRepository.java
+│               │   └── SupportService.java
+│               ├── watcher/
+│               │   ├── domain/
+│               │   │   └── WatcherEvent.java
+│               │   ├── dto/
+│               │   │   └── WatcherEventRecord.java
+│               │   ├── WatcherController.java
+│               │   ├── WatcherRepository.java
+│               │   └── WatcherService.java
+│               └── WatchserviceAgentApplication.java
+└── resources/
+    └── application.yml

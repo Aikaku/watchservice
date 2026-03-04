@@ -1,0 +1,13 @@
+/**
+ * 파일 이름 : App.css
+ * 기능 : App 컴포넌트 전용 스타일을 정의한다.
+ * 작성 날짜 : 2025/12/17
+ * 작성자 : 시스템
+ */
+
+.app-root {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
