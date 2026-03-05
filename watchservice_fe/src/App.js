@@ -27,6 +27,10 @@ import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminMainPage from './pages/admin/AdminMainPage';
 import AdminFeedbackPage from './pages/admin/AdminFeedbackPage';
 import AdminNoticePage from './pages/admin/AdminNoticePage';
+import AdminLogPage from './pages/admin/AdminLogPage';
+import AdminAlertPage from './pages/admin/AdminAlertPage';
+import AdminSessionPage from './pages/admin/AdminSessionPage';
+import AdminSystemPage from './pages/admin/AdminSystemPage';
 import UserNoticePage from './pages/notice/UserNoticePage';
 
 /**
@@ -70,6 +74,10 @@ function App() {
           <Route path="/admin/main" element={<AdminMainPage />} />
           <Route path="/admin/feedback" element={<AdminFeedbackPage />} />
           <Route path="/admin/notification" element={<AdminNoticePage />} />
+          <Route path="/admin/logs" element={<AdminLogPage />} />
+          <Route path="/admin/alerts" element={<AdminAlertPage />} />
+          <Route path="/admin/sessions" element={<AdminSessionPage />} />
+          <Route path="/admin/system" element={<AdminSystemPage />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>

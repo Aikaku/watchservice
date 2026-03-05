@@ -313,5 +313,76 @@ public class NotificationRepository {
             this.params = params;
         }
     }
+
+    // ====== ADMIN 전용 메서드들 (owner_key 필터 없음) ======
+
+    public long countNotificationsAdmin(Long fromEpochMs, Long toEpochMs, String keyword, String level) {
+        SqlAndParams sp = buildAdminWhere(fromEpochMs, toEpochMs, keyword, level);
+        String sql = "SELECT COUNT(*) FROM notification " + sp.whereClause;
+        Long count = jdbcTemplate.queryForObject(sql, sp.params.toArray(), Long.class);
+        return count == null ? 0 : count;
+    }
+
+    public List<Notification> findNotificationsAdmin(Long fromEpochMs, Long toEpochMs, String keyword, String level,
+                                                     String sortField, String sortDir, int offset, int limit) {
+        SqlAndParams sp = buildAdminWhere(fromEpochMs, toEpochMs, keyword, level);
+        String orderBy = buildOrderBy(sortField, sortDir);
+        String sql = """
+                SELECT
+                    id, owner_key, window_start, window_end, created_at,
+                    ai_label, ai_score, top_family, ai_detail, guidance,
+                    affected_files_count, affected_paths
+                FROM notification
+                """ + sp.whereClause + " " + orderBy + " LIMIT ? OFFSET ?";
+        List<Object> params = new ArrayList<>(sp.params);
+        params.add(limit);
+        params.add(offset);
+        return jdbcTemplate.query(sql, params.toArray(), notificationRowMapper());
+    }
+
+    public int deleteByIdAdmin(long id) {
+        return jdbcTemplate.update("DELETE FROM notification WHERE id = ?", id);
+    }
+
+    public long countTotalNotifications() {
+        Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM notification", Long.class);
+        return count == null ? 0 : count;
+    }
+
+    public List<OwnerKeyStat> countNotificationsByOwnerKey() {
+        String sql = "SELECT owner_key, COUNT(*) AS cnt FROM notification GROUP BY owner_key";
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new OwnerKeyStat(rs.getString("owner_key"), rs.getLong("cnt")));
+    }
+
+    private SqlAndParams buildAdminWhere(Long fromEpochMs, Long toEpochMs, String keyword, String level) {
+        StringBuilder where = new StringBuilder("WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+        if (level != null && !level.isBlank()) {
+            String lv = level.trim().toUpperCase(Locale.ROOT);
+            if (lv.equals("DANGER") || lv.equals("WARNING") || lv.equals("SAFE")) {
+                where.append(" AND ai_label = ?");
+                params.add(lv);
+            }
+        }
+        if (fromEpochMs != null) {
+            where.append(" AND created_at >= ?");
+            params.add(fromEpochMs);
+        }
+        if (toEpochMs != null) {
+            where.append(" AND created_at <= ?");
+            params.add(toEpochMs);
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            String like = "%" + keyword + "%";
+            where.append(" AND (affected_paths LIKE ? OR ai_detail LIKE ? OR top_family LIKE ?)");
+            params.add(like);
+            params.add(like);
+            params.add(like);
+        }
+        return new SqlAndParams(" " + where + " ", params);
+    }
+
+    public record OwnerKeyStat(String ownerKey, long count) {}
 }
 

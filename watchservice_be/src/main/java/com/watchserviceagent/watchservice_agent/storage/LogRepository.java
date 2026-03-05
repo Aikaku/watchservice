@@ -404,6 +404,90 @@ public class LogRepository {
         }
     }
 
+    // ====== ADMIN 전용 메서드들 (owner_key 필터 없음) ======
+
+    public long countLogsAdmin(Long fromEpochMs, Long toEpochMs, String keyword, String aiLabel, String eventType) {
+        SqlAndParams sp = buildAdminWhere(fromEpochMs, toEpochMs, keyword, aiLabel, eventType);
+        String sql = "SELECT COUNT(*) FROM log " + sp.whereClause;
+        Long count = jdbcTemplate.queryForObject(sql, sp.params.toArray(), Long.class);
+        return count == null ? 0 : count;
+    }
+
+    public List<Log> findLogsAdmin(Long fromEpochMs, Long toEpochMs, String keyword, String aiLabel, String eventType,
+                                   String sortField, String sortDir, int offset, int limit) {
+        SqlAndParams sp = buildAdminWhere(fromEpochMs, toEpochMs, keyword, aiLabel, eventType);
+        String orderBy = buildOrderBy(sortField, sortDir);
+        String sql = """
+                SELECT
+                    id, owner_key, event_type, path, exists_flag, size,
+                    size_before, size_after, entropy_before, entropy_after,
+                    ext_before, ext_after, exists_before, size_diff, entropy_diff,
+                    last_modified_time, hash, entropy, ai_label, ai_score, ai_detail, collected_at
+                FROM log
+                """ + sp.whereClause + " " + orderBy + " LIMIT ? OFFSET ?";
+        List<Object> params = new ArrayList<>(sp.params);
+        params.add(limit);
+        params.add(offset);
+        return jdbcTemplate.query(sql, params.toArray(), logRowMapper());
+    }
+
+    public int deleteByIdAdmin(long id) {
+        return jdbcTemplate.update("DELETE FROM log WHERE id = ?", id);
+    }
+
+    public int deleteByIdsAdmin(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) return 0;
+        StringBuilder sb = new StringBuilder("DELETE FROM log WHERE id IN (");
+        for (int i = 0; i < ids.size(); i++) {
+            sb.append("?");
+            if (i < ids.size() - 1) sb.append(",");
+        }
+        sb.append(")");
+        return jdbcTemplate.update(sb.toString(), ids.toArray());
+    }
+
+    public long countTotalLogs() {
+        Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM log", Long.class);
+        return count == null ? 0 : count;
+    }
+
+    public List<OwnerKeyStat> countLogsByOwnerKey() {
+        String sql = "SELECT owner_key, COUNT(*) AS cnt FROM log GROUP BY owner_key";
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new OwnerKeyStat(rs.getString("owner_key"), rs.getLong("cnt")));
+    }
+
+    private SqlAndParams buildAdminWhere(Long fromEpochMs, Long toEpochMs, String keyword, String aiLabel, String eventType) {
+        StringBuilder where = new StringBuilder("WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+        if (aiLabel != null && !aiLabel.isBlank()) {
+            where.append(" AND ai_label = ?");
+            params.add(aiLabel.trim());
+        }
+        if (eventType != null && !eventType.isBlank()) {
+            where.append(" AND event_type = ?");
+            params.add(eventType.trim());
+        }
+        if (fromEpochMs != null) {
+            where.append(" AND collected_at >= ?");
+            params.add(fromEpochMs);
+        }
+        if (toEpochMs != null) {
+            where.append(" AND collected_at <= ?");
+            params.add(toEpochMs);
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            String like = "%" + keyword + "%";
+            where.append(" AND (path LIKE ? OR event_type LIKE ? OR ai_detail LIKE ?)");
+            params.add(like);
+            params.add(like);
+            params.add(like);
+        }
+        return new SqlAndParams(" " + where + " ", params);
+    }
+
+    public record OwnerKeyStat(String ownerKey, long count) {}
+
     // ====== ALERTS 전용 API 지원 메서드들 ======
 
     /**

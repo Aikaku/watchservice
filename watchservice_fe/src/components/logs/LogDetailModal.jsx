@@ -46,25 +46,7 @@ function LogDetailModal({ log, onClose, onDelete }) {
             <p><strong>마지막 수정 시각:</strong> {log.lastModifiedTime}</p>
           )}
 
-          {/*
-          {(log.aiLabel || log.aiScore != null || log.aiDetail) && (
-            <>
-              <h3 style={{ marginTop: 24, marginBottom: 12 }}>AI 분석 결과 (참고)</h3>
-              <p><strong>AI 판정:</strong> {log.aiLabel || '-'}</p>
-              {log.aiScore != null && (
-                <p><strong>AI 점수:</strong> {(log.aiScore * 100).toFixed(2)}%</p>
-              )}
-              {log.aiDetail && (
-                <>
-                  <p><strong>AI 상세:</strong></p>
-                  <pre style={{ background: '#111827', color: '#e5e7eb', padding: 12, borderRadius: 8, maxHeight: 240, overflow: 'auto', fontSize: 12 }}>
-                    {log.aiDetail}
-                  </pre>
-                </>
-              )}
-            </>
-          )}
-          */}
+
         </div>
 
         <div className="modal-actions" style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>

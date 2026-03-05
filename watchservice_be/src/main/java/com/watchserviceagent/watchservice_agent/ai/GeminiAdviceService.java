@@ -108,55 +108,36 @@ public class GeminiAdviceService {
 
     private String buildPrompt(AiPayload payload, AiResult aiResult) {
         String label = safe(aiResult.getLabel());
-        String score = (aiResult.getScore() == null) ? "-" : String.format("%.3f", aiResult.getScore());
+        String score = (aiResult.getScore() == null) ? "-" : String.format("%.2f", aiResult.getScore());
         String detail = safe(aiResult.getDetail());
         String featureSummary = summarizePayload(payload);
 
         return """
-너는 보안 관제 담당자(SOC)에게 안내문을 작성하는 전문가다.
-아래 탐지 결과를 바탕으로 '방어/대응' 관점의 안전한 조치만 제시하라.
+SOC 방어조치 전문가. 수비 관점 조치만 작성(공격정보·코드 제외). 한국어.
 
-중요 보안 규칙(반드시 준수):
-- 랜섬웨어 제작/실행/코드/악용/회피/침투/확산/우회 방법은 절대 설명하지 말 것.
-- 공격자 관점의 단계, 명령어, 스크립트, 툴 사용법을 절대 포함하지 말 것.
-- 오직 피해 확산 방지, 격리, 백업, 포렌식 보존, 계정/권한 점검, 모니터링, 신고/보고 등 수비적 조치만 작성.
-- 불확실한 내용은 단정하지 말고, 확인(검증) 절차를 우선 제시.
+탐지: %s score=%s %s
+피처: %s
 
-입력(탐지 요약):
-- label: %s
-- score: %s
-- detail: %s
-- window features(9): %s
-
-출력 형식(한국어, 정확히 이 섹션 구조로):
 [즉시 조치]
-- (3~6개)
-
 [1시간 내]
-- (3~6개)
-
 [오늘 내]
-- (3~6개)
-
-[비고]
-1~2문장
+[비고] 1~2문장
 """.formatted(label, score, detail, featureSummary);
     }
 
     private String summarizePayload(AiPayload payload) {
-        if (payload == null) return "(payload 없음)";
-        return String.format(
-                "read=%d, write=%d, delete=%d, rename=%d, encryptLike=%d, changedFiles=%d, randomExtFlag=%d, entropyDiffMean=%.4f, fileSizeDiffMean=%.4f",
-                payload.getFileReadCount(),
-                payload.getFileWriteCount(),
-                payload.getFileDeleteCount(),
-                payload.getFileRenameCount(),
-                payload.getFileEncryptLikeCount(),
-                payload.getChangedFilesCount(),
-                payload.getRandomExtensionFlag(),
-                payload.getEntropyDiffMean(),
-                payload.getFileSizeDiffMean()
-        );
+        if (payload == null) return "-";
+        StringBuilder sb = new StringBuilder();
+        if (payload.getFileReadCount() > 0)      sb.append("read=").append(payload.getFileReadCount()).append(' ');
+        if (payload.getFileWriteCount() > 0)     sb.append("write=").append(payload.getFileWriteCount()).append(' ');
+        if (payload.getFileDeleteCount() > 0)    sb.append("del=").append(payload.getFileDeleteCount()).append(' ');
+        if (payload.getFileRenameCount() > 0)    sb.append("ren=").append(payload.getFileRenameCount()).append(' ');
+        if (payload.getFileEncryptLikeCount() > 0) sb.append("enc=").append(payload.getFileEncryptLikeCount()).append(' ');
+        if (payload.getChangedFilesCount() > 0)  sb.append("files=").append(payload.getChangedFilesCount()).append(' ');
+        if (payload.getRandomExtensionFlag() > 0) sb.append("randExt=1 ");
+        if (payload.getEntropyDiffMean() > 0.001) sb.append(String.format("entrDiff=%.3f ", payload.getEntropyDiffMean()));
+        if (Math.abs(payload.getFileSizeDiffMean()) > 0.5) sb.append(String.format("sizeDiff=%.0f ", payload.getFileSizeDiffMean()));
+        return sb.isEmpty() ? "변화없음" : sb.toString().trim();
     }
 
     private String callGemini(String prompt) {
@@ -180,7 +161,7 @@ public class GeminiAdviceService {
         });
         body.put("generationConfig", Map.of(
                 "temperature", 0.2,
-                "maxOutputTokens", 600
+                "maxOutputTokens", 400
         ));
 
         // ✅ “Gemini로 보내는 JSON” 로그로 보기 (직렬화 실패해도 호출은 계속)

@@ -153,6 +153,27 @@ public class SettingsRepository {
         jdbcTemplate.update(sql, ownerKey, id);
     }
 
+    // ====== ADMIN 전용 메서드들 ======
+
+    public List<OwnerKeyStat> countFoldersByOwnerKey() {
+        String sql = "SELECT owner_key, COUNT(*) AS cnt FROM watched_folder GROUP BY owner_key";
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new OwnerKeyStat(rs.getString("owner_key"), rs.getLong("cnt")));
+    }
+
+    public List<OwnerKeyStat> countExceptionsByOwnerKey() {
+        String sql = "SELECT owner_key, COUNT(*) AS cnt FROM exception_rule GROUP BY owner_key";
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new OwnerKeyStat(rs.getString("owner_key"), rs.getLong("cnt")));
+    }
+
+    public long countTotalWatchedFolders() {
+        Long count = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM watched_folder", Long.class);
+        return count == null ? 0 : count;
+    }
+
+    public record OwnerKeyStat(String ownerKey, long count) {}
+
     private RowMapper<ExceptionRule> exceptionRuleRowMapper() {
         return new RowMapper<>() {
             @Override

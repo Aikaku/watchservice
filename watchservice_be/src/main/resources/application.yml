@@ -32,7 +32,7 @@ ai:
 # - API Key는 절대 프론트에 노출하지 말고 서버 환경변수로만 주입
 gemini:
   api-key: ${GEMINI_API_KEY:}
-  model: ${GEMINI_MODEL:gemini-1.5-flash}
+  model: ${GEMINI_MODEL:gemini-2.5-flash}
   timeout-ms: ${GEMINI_TIMEOUT_MS:2500}
 
 admin:

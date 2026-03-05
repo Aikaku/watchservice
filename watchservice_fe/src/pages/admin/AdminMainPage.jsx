@@ -32,6 +32,18 @@ function AdminMainPage() {
         <li>
           <Link to="/admin/notification">공지사항 관리</Link>
         </li>
+        <li>
+          <Link to="/admin/logs">로그 관리</Link>
+        </li>
+        <li>
+          <Link to="/admin/alerts">알림/탐지 관리</Link>
+        </li>
+        <li>
+          <Link to="/admin/sessions">사용자 세션 관리</Link>
+        </li>
+        <li>
+          <Link to="/admin/system">시스템 상태 모니터링</Link>
+        </li>
       </ul>
     </div>
   );
