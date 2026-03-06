@@ -1,6 +1,8 @@
 package com.watchserviceagent.watchservice_agent.storage;
 
+import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import com.watchserviceagent.watchservice_agent.storage.dto.*;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -33,11 +35,13 @@ public class LogController {
      * 작성자 : 시스템
      */
     @GetMapping("/recent")
-    public List<LogResponse> getRecentLogs(@RequestParam(name = "limit", defaultValue = "50") int limit) {
+    public List<LogResponse> getRecentLogs(@RequestParam(name = "limit", defaultValue = "50") int limit,
+                                           HttpSession session) {
         if (limit <= 0) limit = 50;
         else if (limit > 1000) limit = 1000;
 
-        List<LogResponse> logs = logService.getRecentLogs(limit);
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        List<LogResponse> logs = logService.getRecentLogs(ownerKey, limit);
         log.info("[LogController] GET /logs/recent limit={} -> {}", limit, logs.size());
         return logs;
     }
@@ -59,9 +63,11 @@ public class LogController {
             @RequestParam(name = "keyword", required = false) String keyword,
             @RequestParam(name = "aiLabel", required = false) String aiLabel,
             @RequestParam(name = "eventType", required = false) String eventType,
-            @RequestParam(name = "sort", required = false) String sort
+            @RequestParam(name = "sort", required = false) String sort,
+            HttpSession session
     ) {
-        return logService.getLogs(page, size, from, to, keyword, aiLabel, eventType, sort);
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return logService.getLogs(ownerKey, page, size, from, to, keyword, aiLabel, eventType, sort);
     }
 
     /**
@@ -73,8 +79,9 @@ public class LogController {
      * 작성자 : 시스템
      */
     @GetMapping("/{id}")
-    public LogResponse getLog(@PathVariable("id") long id) {
-        return logService.getLogById(id);
+    public LogResponse getLog(@PathVariable("id") long id, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return logService.getLogById(ownerKey, id);
     }
 
     /**
@@ -86,8 +93,9 @@ public class LogController {
      * 작성자 : 시스템
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLog(@PathVariable("id") long id) {
-        logService.deleteOne(id);
+    public ResponseEntity<Void> deleteLog(@PathVariable("id") long id, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        logService.deleteOne(ownerKey, id);
         return ResponseEntity.noContent().build();
     }
 
@@ -100,8 +108,9 @@ public class LogController {
      * 작성자 : 시스템
      */
     @PostMapping("/delete")
-    public LogDeleteResponse deleteLogs(@RequestBody LogDeleteRequest req) {
-        int deleted = logService.deleteMany(req.getIds());
+    public LogDeleteResponse deleteLogs(@RequestBody LogDeleteRequest req, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        int deleted = logService.deleteMany(ownerKey, req.getIds());
         return LogDeleteResponse.builder().deletedCount(deleted).build();
     }
 
@@ -114,8 +123,9 @@ public class LogController {
      * 작성자 : 시스템
      */
     @PostMapping("/export")
-    public ResponseEntity<?> exportLogs(@RequestBody LogExportRequest req) {
-        LogService.ExportResult result = logService.exportLogs(req);
+    public ResponseEntity<?> exportLogs(@RequestBody LogExportRequest req, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        LogService.ExportResult result = logService.exportLogs(ownerKey, req);
 
         if (result.isJson()) {
             return ResponseEntity.ok(result.getJsonItems());
