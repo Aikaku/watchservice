@@ -74,7 +74,7 @@ public class FileCollectorService {
             }
 
             try {
-                entropyAfter = entropyAnalyzer.computeSampleEntropy(path, 4096);
+                entropyAfter = entropyAnalyzer.computeMultiSectionEntropy(path, 4096);
             } catch (IOException e) {
                 log.warn("Failed to compute entropy: {}", path, e);
             }

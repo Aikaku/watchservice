@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -75,6 +77,83 @@ public class EntropyAnalyzer {
      */
     public double computeSampleEntropy(Path path) throws IOException {
         return computeSampleEntropy(path, 4096);
+    }
+
+    /**
+     * 함수 이름 : computeMultiSectionEntropy
+     * 기능 : 파일을 앞(40%)/중간(40%)/끝(20%) 3구간에서 샘플링하여 Shannon 엔트로피를 계산한다.
+     *        파일 크기가 totalSampleBytes 이하이면 기존 순차 읽기 방식을 사용한다.
+     *        중간·끝부터 암호화하는 랜섬웨어나 PDF/ZIP 헤더 파일에서 더 정확한 엔트로피를 반환한다.
+     * 매개변수 : path - 대상 파일 경로, totalSampleBytes - 전체 샘플 바이트 수 (예: 4096)
+     * 반환값 : double - 엔트로피 값 (0 이상, 최대 약 8)
+     * 예외 : IOException - 파일 읽기 실패 시
+     * 작성 날짜 : 2026/03/06
+     * 작성자 : 시스템
+     */
+    public double computeMultiSectionEntropy(Path path, int totalSampleBytes) throws IOException {
+        if (totalSampleBytes <= 0) {
+            throw new IllegalArgumentException("totalSampleBytes must be positive");
+        }
+
+        long fileSize = Files.size(path);
+
+        if (fileSize <= totalSampleBytes) {
+            return computeSampleEntropy(path, totalSampleBytes);
+        }
+
+        // 3구간 샘플 크기: 앞 40%, 중간 40%, 끝 20%
+        int frontBytes  = (int) (totalSampleBytes * 0.4);
+        int middleBytes = (int) (totalSampleBytes * 0.4);
+        int endBytes    = totalSampleBytes - frontBytes - middleBytes; // 나머지 (≈20%)
+
+        int[] freq = new int[256];
+        int total = 0;
+
+        try (SeekableByteChannel ch = Files.newByteChannel(path)) {
+            // 구간 1: 파일 앞
+            total += readSection(ch, 0L, frontBytes, freq);
+
+            // 구간 2: 파일 중간 (파일 중앙 - middleBytes/2 위치)
+            long middleOffset = (fileSize / 2) - (middleBytes / 2);
+            if (middleOffset < frontBytes) middleOffset = frontBytes;
+            total += readSection(ch, middleOffset, middleBytes, freq);
+
+            // 구간 3: 파일 끝
+            long endOffset = fileSize - endBytes;
+            if (endOffset < middleOffset + middleBytes) endOffset = middleOffset + middleBytes;
+            total += readSection(ch, endOffset, endBytes, freq);
+        }
+
+        if (total == 0) return 0.0;
+
+        double entropy = 0.0;
+        for (int count : freq) {
+            if (count == 0) continue;
+            double p = (double) count / (double) total;
+            entropy -= p * log2(p);
+        }
+        return entropy;
+    }
+
+    private int readSection(SeekableByteChannel ch, long offset, int length, int[] freq) throws IOException {
+        if (length <= 0) return 0;
+        ch.position(offset);
+        ByteBuffer buf = ByteBuffer.allocate(Math.min(length, 4096));
+        int remaining = length;
+        int read = 0;
+        while (remaining > 0) {
+            buf.clear();
+            if (buf.capacity() > remaining) buf.limit(remaining);
+            int n = ch.read(buf);
+            if (n <= 0) break;
+            buf.flip();
+            for (int i = 0; i < n; i++) {
+                freq[buf.get() & 0xFF]++;
+            }
+            read += n;
+            remaining -= n;
+        }
+        return read;
     }
 
     /**

@@ -49,8 +49,13 @@ watchservice:
       entropy-diff-threshold: 0.30
       min-size-bytes: 4096
       eps: 1.0e-6
+      absolute-entropy-threshold: 7.2
+
+    entropy:
+      significant-diff-threshold: 0.05
 
     random-ext:
       min-count: 2
       min-length: 4
       whitelist: "txt,log,doc,docx,xls,xlsx,pdf,png,jpg,jpeg,gif,zip,rar,7z"
+      uniform-ext-min-count: 3

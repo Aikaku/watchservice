@@ -57,6 +57,15 @@ public class EventWindowAggregator {
     @Value("${watchservice.analytics.random-ext.min-length:4}")
     private int randomExtMinLength;
 
+    @Value("${watchservice.analytics.encrypt.absolute-entropy-threshold:7.2}")
+    private double absoluteEntropyThreshold;
+
+    @Value("${watchservice.analytics.entropy.significant-diff-threshold:0.05}")
+    private double entropySignificantDiffThreshold;
+
+    @Value("${watchservice.analytics.random-ext.uniform-ext-min-count:3}")
+    private int uniformExtMinCount;
+
     // csv: txt,log,doc,docx,...
     @Value("${watchservice.analytics.random-ext.whitelist:txt,log,doc,docx,xls,xlsx,pdf,png,jpg,jpeg,gif,zip,rar,7z}")
     private String randomExtWhitelistCsv;
@@ -274,6 +283,7 @@ public class EventWindowAggregator {
 
         Set<String> changedFileSet = new HashSet<>();
         Set<String> suspiciousExtFileSet = new HashSet<>();
+        Map<String, Integer> extAfterFreq = new HashMap<>();
 
         double entropyDiffSum = 0.0;
         double sizeDiffSum = 0.0;
@@ -304,8 +314,11 @@ public class EventWindowAggregator {
             boolean hasEntropyPair = (entropyBefore != null && entropyAfter != null);
             if (hasEntropyPair) {
                 entropyDiff = entropyAfter - entropyBefore;
-                entropyDiffSum += entropyDiff;
-                entropyDiffCount++;
+                // 유의미한 변화(|diff| > threshold)만 평균에 산입 (≈0 이벤트로 신호 희석 방지)
+                if (Math.abs(entropyDiff) > entropySignificantDiffThreshold) {
+                    entropyDiffSum += entropyDiff;
+                    entropyDiffCount++;
+                }
             }
 
             // ---------------------------------------
@@ -342,8 +355,13 @@ public class EventWindowAggregator {
             // random extension (윈도우 내 "여러개"면 플래그)
             // ---------------------------------------
             if (path != null) {
-                if (isSuspiciousExt(r.getExtBefore()) || isSuspiciousExt(r.getExtAfter())) {
+                String extA = r.getExtAfter();
+                if (isSuspiciousExt(r.getExtBefore()) || isSuspiciousExt(extA)) {
                     suspiciousExtFileSet.add(path);
+                }
+                // 균일 확장자 집단 탐지: CREATE/MODIFY에서 suspicious extAfter 빈도 누적
+                if (("CREATE".equals(eventType) || "MODIFY".equals(eventType)) && isSuspiciousExt(extA)) {
+                    extAfterFreq.merge(extA.toLowerCase(Locale.ROOT), 1, Integer::sum);
                 }
             }
 
@@ -362,7 +380,14 @@ public class EventWindowAggregator {
 
             boolean entropyUp = (hasEntropyPair && entropyDiff >= encryptEntropyDiffThreshold);
 
-            if (bigEnough && entropyUp && (sizeChanged || extChanged)) {
+            // before 스냅샷 없이 CREATE된 파일이 이미 고엔트로피 + suspicious ext 이면 암호화 의심
+            String extAfter = r.getExtAfter();
+            boolean noBeforeButHighEntropy = (!hasEntropyPair
+                    && entropyAfter != null
+                    && entropyAfter >= absoluteEntropyThreshold
+                    && isSuspiciousExt(extAfter));
+
+            if (bigEnough && ((entropyUp && (sizeChanged || extChanged)) || noBeforeButHighEntropy)) {
                 encryptLikeCount++;
             }
         }
@@ -379,7 +404,8 @@ public class EventWindowAggregator {
         if (changedFilesCount < 0) changedFilesCount = 0;
 
         int suspiciousExtCount = suspiciousExtFileSet.size();
-        int randomExtFlag = (suspiciousExtCount >= Math.max(1, randomExtMinCount)) ? 1 : 0;
+        boolean uniformExtDetected = extAfterFreq.values().stream().anyMatch(cnt -> cnt >= uniformExtMinCount);
+        int randomExtFlag = (suspiciousExtCount >= Math.max(1, randomExtMinCount) || uniformExtDetected) ? 1 : 0;
 
         stats.fileTouchCount = touchCount;
         stats.fileWriteCount = writeCount;
@@ -455,6 +481,18 @@ public class EventWindowAggregator {
 
                 int score = 0;
 
+                // 패턴 A: ext-append (file.doc → file.doc.wncry 등 WannaCry/LockBit 전형)
+                if (crtPath.startsWith(delPath + ".") || crtPath.startsWith(delPath + "_")) {
+                    score += 3;
+                }
+
+                // 패턴 B: 파일 stem 동일 (확장자가 완전히 바뀐 경우)
+                String delStem = getFileStem(delPath);
+                String crtStem = getFileStem(crtPath);
+                if (delStem != null && delStem.equalsIgnoreCase(crtStem)) {
+                    score += 2;
+                }
+
                 Long crtSize = crt.getSizeAfter();
                 if (delSize != null && crtSize != null) {
                     if (delSize.equals(crtSize)) score += 2;
@@ -506,6 +544,17 @@ public class EventWindowAggregator {
         int idx = Math.max(slash, backslash);
         if (idx < 0) return "";
         return path.substring(0, idx);
+    }
+
+    private String getFileStem(String path) {
+        if (path == null) return null;
+        int slash = path.lastIndexOf('/');
+        int backslash = path.lastIndexOf('\\');
+        int sepIdx = Math.max(slash, backslash);
+        String basename = (sepIdx >= 0) ? path.substring(sepIdx + 1) : path;
+        int dot = basename.indexOf('.');
+        if (dot < 0) return basename;
+        return dot == 0 ? basename : basename.substring(0, dot);
     }
 
     private String normalizeType(String eventType) {
