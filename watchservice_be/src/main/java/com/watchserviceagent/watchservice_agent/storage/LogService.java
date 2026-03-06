@@ -1,7 +1,6 @@
 package com.watchserviceagent.watchservice_agent.storage;
 
 import com.watchserviceagent.watchservice_agent.collector.dto.FileAnalysisResult;
-import com.watchserviceagent.watchservice_agent.common.util.SessionIdManager;
 import com.watchserviceagent.watchservice_agent.storage.domain.Log;
 import com.watchserviceagent.watchservice_agent.storage.dto.LogExportRequest;
 import com.watchserviceagent.watchservice_agent.storage.dto.LogPageResponse;
@@ -28,7 +27,6 @@ import java.util.List;
 @Slf4j
 public class LogService {
 
-    private final SessionIdManager sessionIdManager;
     private final LogWriterWorker logWriterWorker;
     private final LogRepository logRepository;
 
@@ -57,8 +55,7 @@ public class LogService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public List<LogResponse> getRecentLogs(int limit) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public List<LogResponse> getRecentLogs(String ownerKey, int limit) {
         List<Log> logs = logRepository.findRecentLogsByOwner(ownerKey, limit);
         return logs.stream().map(LogResponse::from).toList();
     }
@@ -71,7 +68,7 @@ public class LogService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public LogPageResponse getLogs(Integer page, Integer size, String from, String to,
+    public LogPageResponse getLogs(String ownerKey, Integer page, Integer size, String from, String to,
                                    String keyword, String aiLabel, String eventType, String sort) {
 
         int p = (page == null || page < 1) ? 1 : page;
@@ -80,8 +77,6 @@ public class LogService {
         SortInfo sortInfo = parseSort(sort);
         Long fromEpoch = parseFromToEpochStart(from);
         Long toEpoch = parseFromToEpochEnd(to);
-
-        String ownerKey = sessionIdManager.getSessionId();
 
         long total = logRepository.countLogsByOwner(ownerKey, fromEpoch, toEpoch, keyword, aiLabel, eventType);
         int offset = (p - 1) * s;
@@ -118,8 +113,7 @@ public class LogService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public LogResponse getLogById(long id) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public LogResponse getLogById(String ownerKey, long id) {
         Log log = logRepository.findByIdAndOwner(ownerKey, id)
                 .orElseThrow(() -> new IllegalArgumentException("log not found: id=" + id));
         return LogResponse.from(log);
@@ -134,8 +128,7 @@ public class LogService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public void deleteOne(long id) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public void deleteOne(String ownerKey, long id) {
         int deleted = logRepository.deleteByIdAndOwner(ownerKey, id);
         if (deleted <= 0) throw new IllegalArgumentException("log not found: id=" + id);
     }
@@ -148,14 +141,12 @@ public class LogService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public int deleteMany(List<Long> ids) {
+    public int deleteMany(String ownerKey, List<Long> ids) {
         if (ids == null || ids.isEmpty()) return 0;
-        String ownerKey = sessionIdManager.getSessionId();
         return logRepository.deleteByIdsAndOwner(ownerKey, ids);
     }
 
-    public ExportResult exportLogs(LogExportRequest req) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public ExportResult exportLogs(String ownerKey, LogExportRequest req) {
 
         List<Long> ids = req.getIds();
         String format = (req.getFormat() == null) ? "CSV" : req.getFormat().trim().toUpperCase();

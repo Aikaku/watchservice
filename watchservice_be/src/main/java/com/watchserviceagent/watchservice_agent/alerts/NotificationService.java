@@ -3,7 +3,6 @@ package com.watchserviceagent.watchservice_agent.alerts;
 import com.watchserviceagent.watchservice_agent.alerts.domain.Notification;
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationPageResponse;
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationResponse;
-import com.watchserviceagent.watchservice_agent.common.util.SessionIdManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final SessionIdManager sessionIdManager;
     private final NotificationRepository notificationRepository;
 
     private static final int MAX_PAGE_SIZE = 1000;
@@ -44,6 +42,7 @@ public class NotificationService {
      * 작성자 : 시스템
      */
     public NotificationPageResponse getNotifications(
+            String ownerKey,
             Integer page,
             Integer size,
             String from,
@@ -59,8 +58,6 @@ public class NotificationService {
 
         Long fromEpoch = parseFromToEpochStart(from);
         Long toEpoch = parseFromToEpochEnd(to);
-
-        String ownerKey = sessionIdManager.getSessionId();
 
         String lv = normalizeLevel(level);
 
@@ -93,8 +90,7 @@ public class NotificationService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public NotificationResponse getNotificationById(long id) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public NotificationResponse getNotificationById(String ownerKey, long id) {
         Notification notification = notificationRepository.findByIdAndOwner(ownerKey, id)
                 .orElseThrow(() -> new NoSuchElementException("notification not found: id=" + id));
         return toNotificationResponse(notification);
@@ -115,8 +111,7 @@ public class NotificationService {
     /**
      * 메인보드(대시보드)에서 최근 guidance를 보여주기 위한 최신 알림 조회
      */
-    public NotificationResponse getLatestNotificationOrNull() {
-        String ownerKey = sessionIdManager.getSessionId();
+    public NotificationResponse getLatestNotificationOrNull(String ownerKey) {
         return notificationRepository.findLatestByOwner(ownerKey)
                 .map(this::toNotificationResponse)
                 .orElse(null);

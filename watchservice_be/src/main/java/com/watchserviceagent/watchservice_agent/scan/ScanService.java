@@ -2,7 +2,6 @@ package com.watchserviceagent.watchservice_agent.scan;
 
 import com.watchserviceagent.watchservice_agent.collector.FileCollectorService;
 import com.watchserviceagent.watchservice_agent.collector.dto.FileAnalysisResult;
-import com.watchserviceagent.watchservice_agent.common.util.SessionIdManager;
 import com.watchserviceagent.watchservice_agent.scan.domain.ScanJob;
 import com.watchserviceagent.watchservice_agent.scan.dto.ScanProgressResponse;
 import com.watchserviceagent.watchservice_agent.watcher.WatcherService;
@@ -21,14 +20,13 @@ import java.util.concurrent.*;
 @Slf4j
 public class ScanService {
 
-    private final SessionIdManager sessionIdManager;
     private final FileCollectorService fileCollectorService;
     private final WatcherService watcherService;
 
     private final Map<String, ScanJob> jobs = new ConcurrentHashMap<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
-    public String startScan(List<String> paths, boolean autoStartWatcher) {
+    public String startScan(String ownerKey, List<String> paths, boolean autoStartWatcher) {
         List<String> roots = (paths == null) ? List.of() : paths.stream()
                 .filter(Objects::nonNull)
                 .map(String::trim)
@@ -44,7 +42,7 @@ public class ScanService {
         ScanJob job = new ScanJob(scanId, roots);
         jobs.put(scanId, job);
 
-        executor.submit(() -> runScan(job, autoStartWatcher));
+        executor.submit(() -> runScan(job, autoStartWatcher, ownerKey));
 
         return scanId;
     }
@@ -73,8 +71,7 @@ public class ScanService {
         return job;
     }
 
-    private void runScan(ScanJob job, boolean autoStartWatcher) {
-        String ownerKey = sessionIdManager.getSessionId();
+    private void runScan(ScanJob job, boolean autoStartWatcher, String ownerKey) {
 
         try {
             // 1) total 계산(진행률용)

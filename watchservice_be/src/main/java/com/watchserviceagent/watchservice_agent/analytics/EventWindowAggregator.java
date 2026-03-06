@@ -6,7 +6,6 @@ import com.watchserviceagent.watchservice_agent.ai.dto.AiPayload;
 import com.watchserviceagent.watchservice_agent.alerts.NotificationService;
 import com.watchserviceagent.watchservice_agent.alerts.domain.Notification;
 import com.watchserviceagent.watchservice_agent.collector.dto.FileAnalysisResult;
-import com.watchserviceagent.watchservice_agent.common.util.SessionIdManager;
 import com.watchserviceagent.watchservice_agent.storage.LogService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -99,16 +98,23 @@ public class EventWindowAggregator {
     private final AiService aiService;
     private final LogService logService;
     private final NotificationService notificationService;
-    private final SessionIdManager sessionIdManager;
 
     // =========================
-    // State
+    // State (사용자별로 분리)
     // =========================
-    private Long currentWindowStartMs = null;
-    private final List<FileAnalysisResult> currentEvents = new ArrayList<>();
+    private static class UserWindowState {
+        Long currentWindowStartMs = null;
+        final List<FileAnalysisResult> currentEvents = new ArrayList<>();
+        // "touch"(접근) 세션 관리: ownerKey|path -> lastTouchMs
+        final Map<String, Long> lastTouchTimeByFile = new HashMap<>();
+    }
 
-    // "touch"(접근) 세션 관리: ownerKey|path -> lastTouchMs
-    private final Map<String, Long> lastTouchTimeByFile = new HashMap<>();
+    // ownerKey -> 해당 사용자의 윈도우 상태
+    private final Map<String, UserWindowState> userWindowStates = new HashMap<>();
+
+    private UserWindowState getOrCreateState(String ownerKey) {
+        return userWindowStates.computeIfAbsent(ownerKey, k -> new UserWindowState());
+    }
 
     private static class WindowStats {
         int fileTouchCount;          // "읽기"가 아니라 "최근에 접근/변경으로 감지된 파일 수(세션 기준)"
@@ -142,18 +148,21 @@ public class EventWindowAggregator {
             return;
         }
 
+        String ownerKey = result.getOwnerKey();
+        UserWindowState state = getOrCreateState(ownerKey);
+
         long eventTimeMs = (result.getEventTime() != null)
                 ? result.getEventTime().toEpochMilli()
                 : System.currentTimeMillis();
 
-        if (currentWindowStartMs == null) {
-            currentWindowStartMs = eventTimeMs;
-        } else if (eventTimeMs - currentWindowStartMs >= windowMs) {
-            flushWindow();
-            currentWindowStartMs = eventTimeMs;
+        if (state.currentWindowStartMs == null) {
+            state.currentWindowStartMs = eventTimeMs;
+        } else if (eventTimeMs - state.currentWindowStartMs >= windowMs) {
+            flushWindow(state);
+            state.currentWindowStartMs = eventTimeMs;
         }
 
-        currentEvents.add(result);
+        state.currentEvents.add(result);
     }
 
     /**
@@ -165,9 +174,19 @@ public class EventWindowAggregator {
      * 작성자 : 시스템
      */
     public synchronized void flushIfNeeded() {
-        if (!currentEvents.isEmpty()) {
-            flushWindow();
-            currentWindowStartMs = null;
+        for (UserWindowState state : userWindowStates.values()) {
+            if (!state.currentEvents.isEmpty()) {
+                flushWindow(state);
+                state.currentWindowStartMs = null;
+            }
+        }
+    }
+
+    public synchronized void flushIfNeeded(String ownerKey) {
+        UserWindowState state = userWindowStates.get(ownerKey);
+        if (state != null && !state.currentEvents.isEmpty()) {
+            flushWindow(state);
+            state.currentWindowStartMs = null;
         }
     }
 
@@ -179,10 +198,10 @@ public class EventWindowAggregator {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    private void flushWindow() {
-        if (currentEvents.isEmpty()) return;
+    private void flushWindow(UserWindowState state) {
+        if (state.currentEvents.isEmpty()) return;
 
-        WindowStats stats = computeWindowStats(currentEvents, lastTouchTimeByFile);
+        WindowStats stats = computeWindowStats(state.currentEvents, state.lastTouchTimeByFile);
 
         // ✅ 9개 피처만 포함하는 AiPayload 빌드
         AiPayload payload = AiPayload.builder()
@@ -197,8 +216,8 @@ public class EventWindowAggregator {
                 .fileSizeDiffMean(stats.sizeDiffMean)
                 .build();
 
-        Instant windowStart = Instant.ofEpochMilli(currentWindowStartMs);
-        Instant windowEnd = currentEvents.get(currentEvents.size() - 1).getEventTime();
+        Instant windowStart = Instant.ofEpochMilli(state.currentWindowStartMs);
+        Instant windowEnd = state.currentEvents.get(state.currentEvents.size() - 1).getEventTime();
         if (windowEnd == null) windowEnd = windowStart;
 
         log.info(
@@ -217,7 +236,7 @@ public class EventWindowAggregator {
         );
 
         AiResult aiResult = aiService.requestAnalysis(payload);
-        
+
         // 랜섬웨어 감지 시 경고 로그
         if (aiResult.getIsRansomware() != null && aiResult.getIsRansomware()) {
             log.warn(
@@ -232,20 +251,19 @@ public class EventWindowAggregator {
         }
 
         // ✅ 같은 윈도우 이벤트들에 AI 결과를 부착해서 저장
-        for (FileAnalysisResult r : currentEvents) {
+        for (FileAnalysisResult r : state.currentEvents) {
             FileAnalysisResult enriched = r.withAiResult(aiResult);
             logService.saveAsync(enriched);
         }
 
         // ✅ 윈도우 단위 알림 저장: affectedPaths 수집
-        List<String> affectedPaths = currentEvents.stream()
+        List<String> affectedPaths = state.currentEvents.stream()
                 .map(FileAnalysisResult::getPath)
                 .filter(Objects::nonNull)
                 .distinct()
                 .collect(Collectors.toList());
 
-        String ownerKey = currentEvents.isEmpty() ? sessionIdManager.getSessionId() : currentEvents.get(0).getOwnerKey();
-        if (ownerKey == null) ownerKey = sessionIdManager.getSessionId();
+        String ownerKey = state.currentEvents.get(0).getOwnerKey();
 
         Instant createdAt = Instant.now();
 
@@ -270,7 +288,7 @@ public class EventWindowAggregator {
             log.error("[EventWindowAggregator] 알림 저장 실패", e);
         }
 
-        currentEvents.clear();
+        state.currentEvents.clear();
     }
 
     private WindowStats computeWindowStats(List<FileAnalysisResult> events, Map<String, Long> sessionState) {

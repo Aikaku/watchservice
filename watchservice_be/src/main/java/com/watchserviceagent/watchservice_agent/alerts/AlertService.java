@@ -2,7 +2,6 @@ package com.watchserviceagent.watchservice_agent.alerts;
 
 import com.watchserviceagent.watchservice_agent.alerts.dto.AlertPageResponse;
 import com.watchserviceagent.watchservice_agent.alerts.dto.AlertStatsResponse;
-import com.watchserviceagent.watchservice_agent.common.util.SessionIdManager;
 import com.watchserviceagent.watchservice_agent.storage.LogRepository;
 import com.watchserviceagent.watchservice_agent.storage.domain.Log;
 import com.watchserviceagent.watchservice_agent.storage.dto.LogResponse;
@@ -28,7 +27,6 @@ import java.util.NoSuchElementException;
 @RequiredArgsConstructor
 public class AlertService {
 
-    private final SessionIdManager sessionIdManager;
     private final LogRepository logRepository;
 
     private static final int MAX_PAGE_SIZE = 1000;
@@ -43,6 +41,7 @@ public class AlertService {
      * 작성자 : 시스템
      */
     public AlertPageResponse getAlerts(
+            String ownerKey,
             Integer page,
             Integer size,
             String from,
@@ -58,8 +57,6 @@ public class AlertService {
 
         Long fromEpoch = parseFromToEpochStart(from);
         Long toEpoch = parseFromToEpochEnd(to);
-
-        String ownerKey = sessionIdManager.getSessionId();
 
         // level 정규화: ALL/빈값 => null 처리
         String lv = normalizeLevel(level);
@@ -91,8 +88,7 @@ public class AlertService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public LogResponse getAlertById(long id) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public LogResponse getAlertById(String ownerKey, long id) {
         Log logEntity = logRepository.findAlertByIdAndOwner(ownerKey, id)
                 .orElseThrow(() -> new NoSuchElementException("alert not found: id=" + id));
         return LogResponse.from(logEntity);
@@ -106,14 +102,12 @@ public class AlertService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public AlertStatsResponse getStats(String range, String from, String to) {
+    public AlertStatsResponse getStats(String ownerKey, String range, String from, String to) {
         String rg = (range == null) ? "daily" : range.trim().toLowerCase(Locale.ROOT);
         if (!rg.equals("daily") && !rg.equals("weekly")) rg = "daily";
 
         Long fromEpoch = parseFromToEpochStart(from);
         Long toEpoch = parseFromToEpochEnd(to);
-
-        String ownerKey = sessionIdManager.getSessionId();
 
         var rows = logRepository.getAlertStats(ownerKey, fromEpoch, toEpoch, rg);
 

@@ -1,6 +1,5 @@
 package com.watchserviceagent.watchservice_agent.settings;
 
-import com.watchserviceagent.watchservice_agent.common.util.SessionIdManager;
 import com.watchserviceagent.watchservice_agent.settings.domain.WatchedFolder;
 import com.watchserviceagent.watchservice_agent.settings.domain.ExceptionRule;
 import com.watchserviceagent.watchservice_agent.settings.dto.WatchedFolderRequest;
@@ -24,22 +23,18 @@ import java.util.stream.Collectors;
 @Slf4j
 public class SettingsService {
 
-    private final SessionIdManager sessionIdManager;
     private final SettingsRepository settingsRepository;
 
     // ===== 감시 폴더 =====
 
-    public List<WatchedFolderResponse> getWatchedFolders() {
-        String ownerKey = sessionIdManager.getSessionId();
+    public List<WatchedFolderResponse> getWatchedFolders(String ownerKey) {
         List<WatchedFolder> list = settingsRepository.findWatchedFolders(ownerKey);
         return list.stream()
                 .map(WatchedFolderResponse::from)
                 .collect(Collectors.toList());
     }
 
-    public WatchedFolderResponse addWatchedFolder(WatchedFolderRequest req) {
-        String ownerKey = sessionIdManager.getSessionId();
-
+    public WatchedFolderResponse addWatchedFolder(String ownerKey, WatchedFolderRequest req) {
         String name = (req.getName() == null || req.getName().isBlank())
                 ? req.getPath()
                 : req.getName();
@@ -49,25 +44,21 @@ public class SettingsService {
         return WatchedFolderResponse.from(folder);
     }
 
-    public void deleteWatchedFolder(Long id) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public void deleteWatchedFolder(String ownerKey, Long id) {
         settingsRepository.deleteWatchedFolder(ownerKey, id);
         log.info("[SettingsService] 감시 폴더 삭제: id={}", id);
     }
 
     // ===== 예외 규칙 =====
 
-    public List<ExceptionRuleResponse> getExceptionRules() {
-        String ownerKey = sessionIdManager.getSessionId();
+    public List<ExceptionRuleResponse> getExceptionRules(String ownerKey) {
         List<ExceptionRule> list = settingsRepository.findExceptionRules(ownerKey);
         return list.stream()
                 .map(ExceptionRuleResponse::from)
                 .collect(Collectors.toList());
     }
 
-    public ExceptionRuleResponse addExceptionRule(ExceptionRuleRequest req) {
-        String ownerKey = sessionIdManager.getSessionId();
-
+    public ExceptionRuleResponse addExceptionRule(String ownerKey, ExceptionRuleRequest req) {
         String type = (req.getType() == null || req.getType().isBlank())
                 ? "PATH"
                 : req.getType().toUpperCase();
@@ -82,8 +73,7 @@ public class SettingsService {
         return ExceptionRuleResponse.from(rule);
     }
 
-    public void deleteExceptionRule(Long id) {
-        String ownerKey = sessionIdManager.getSessionId();
+    public void deleteExceptionRule(String ownerKey, Long id) {
         settingsRepository.deleteExceptionRule(ownerKey, id);
         log.info("[SettingsService] 예외 규칙 삭제: id={}", id);
     }

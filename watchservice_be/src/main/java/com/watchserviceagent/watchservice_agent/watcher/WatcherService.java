@@ -3,7 +3,6 @@ package com.watchserviceagent.watchservice_agent.watcher;
 import com.watchserviceagent.watchservice_agent.analytics.EventWindowAggregator;
 import com.watchserviceagent.watchservice_agent.collector.FileCollectorService;
 import com.watchserviceagent.watchservice_agent.collector.dto.FileAnalysisResult;
-import com.watchserviceagent.watchservice_agent.common.util.SessionIdManager;
 import com.watchserviceagent.watchservice_agent.watcher.dto.WatcherEventRecord;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 클래스 이름 : WatcherService
  * 기능 : 지정된 폴더를 실시간으로 감시하여 파일 생성/수정/삭제 이벤트를 감지하고, 이벤트를 Collector로 전달한다.
+ *        사용자별(ownerKey)로 독립적인 WatchService 인스턴스를 관리한다.
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
@@ -26,42 +26,56 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class WatcherService {
 
-    private final SessionIdManager sessionIdManager;
     private final FileCollectorService fileCollectorService;
     private final EventWindowAggregator eventWindowAggregator;
 
-    private WatchService watchService;
-    private Thread watcherThread;
-    private volatile boolean running = false;
+    // 사용자별 감시 상태
+    private static class UserWatcherState {
+        final String ownerKey;
+        WatchService watchService;
+        Thread watcherThread;
+        volatile boolean running = false;
+        final Map<WatchKey, Path> keyDirMap = new ConcurrentHashMap<>();
+        final List<Path> watchedRoots = new ArrayList<>();
 
-    private final Map<WatchKey, Path> keyDirMap = new ConcurrentHashMap<>();
-    private final List<Path> watchedRoots = new ArrayList<>();
+        UserWatcherState(String ownerKey) {
+            this.ownerKey = ownerKey;
+        }
+    }
+
+    private final Map<String, UserWatcherState> userWatcherStates = new ConcurrentHashMap<>();
+
+    private UserWatcherState getOrCreateState(String ownerKey) {
+        return userWatcherStates.computeIfAbsent(ownerKey, UserWatcherState::new);
+    }
 
     /**
      * 함수 이름 : startWatching
-     * 기능 : 단일 폴더 경로를 감시하기 시작한다. 내부적으로 startWatchingMultiple을 호출한다.
-     * 매개변수 : folderPath - 감시할 폴더 경로
+     * 기능 : 단일 폴더 경로를 감시하기 시작한다.
+     * 매개변수 : ownerKey - 사용자 키, folderPath - 감시할 폴더 경로
      * 반환값 : 없음
      * 예외 : IOException - WatchService 생성 실패 시
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public synchronized void startWatching(String folderPath) throws IOException {
-        startWatchingMultiple(List.of(folderPath));
+    public void startWatching(String ownerKey, String folderPath) throws IOException {
+        startWatchingMultiple(ownerKey, List.of(folderPath));
     }
 
     /**
      * 함수 이름 : startWatchingMultiple
      * 기능 : 여러 폴더 경로를 동시에 감시하기 시작한다. WatchService를 초기화하고 모든 하위 디렉토리를 재귀적으로 등록한다.
-     * 매개변수 : folderPaths - 감시할 폴더 경로 리스트
+     * 매개변수 : ownerKey - 사용자 키, folderPaths - 감시할 폴더 경로 리스트
      * 반환값 : 없음
      * 예외 : IOException - WatchService 생성 실패 시, IllegalArgumentException - 경로가 유효하지 않을 때
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public synchronized void startWatchingMultiple(List<String> folderPaths) throws IOException {
-        if (running) {
-            log.info("Watcher already running. ignore startWatching request. paths={}", folderPaths);
+    public synchronized void startWatchingMultiple(String ownerKey, List<String> folderPaths) throws IOException {
+        UserWatcherState state = getOrCreateState(ownerKey);
+
+        if (state.running) {
+            log.info("Watcher already running for ownerKey={}. paths={}", ownerKey, folderPaths);
             return;
         }
 
@@ -79,121 +93,101 @@ public class WatcherService {
             throw new IllegalArgumentException("감시할 폴더가 없습니다.");
         }
 
-        this.watchService = FileSystems.getDefault().newWatchService();
-        this.keyDirMap.clear();
-        this.watchedRoots.clear();
-        this.watchedRoots.addAll(roots);
+        state.watchService = FileSystems.getDefault().newWatchService();
+        state.keyDirMap.clear();
+        state.watchedRoots.clear();
+        state.watchedRoots.addAll(roots);
 
         for (Path root : roots) {
-            registerAll(root);
+            registerAll(state, root);
         }
 
-        running = true;
-        watcherThread = new Thread(this::watchLoop, "WatcherService-Thread");
-        watcherThread.start();
+        state.running = true;
+        state.watcherThread = new Thread(() -> watchLoop(state), "WatcherService-Thread-" + ownerKey);
+        state.watcherThread.start();
 
-        log.info("Started watching roots: {}", roots);
+        log.info("Started watching roots={} for ownerKey={}", roots, ownerKey);
     }
 
-    /**
-     * 함수 이름 : registerAll
-     * 기능 : 지정된 경로부터 시작하여 모든 하위 디렉토리를 재귀적으로 WatchService에 등록한다.
-     * 매개변수 : start - 등록을 시작할 루트 경로
-     * 반환값 : 없음
-     * 예외 : IOException - 파일 시스템 접근 실패 시
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
-    private void registerAll(Path start) throws IOException {
+    private void registerAll(UserWatcherState state, Path start) throws IOException {
         Files.walkFileTree(start, new HashSet<>(), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                register(dir);
+                WatchKey key = dir.register(
+                        state.watchService,
+                        StandardWatchEventKinds.ENTRY_CREATE,
+                        StandardWatchEventKinds.ENTRY_MODIFY,
+                        StandardWatchEventKinds.ENTRY_DELETE
+                );
+                state.keyDirMap.put(key, dir);
+                log.debug("Registered directory for watching: {}", dir);
                 return FileVisitResult.CONTINUE;
             }
         });
     }
 
     /**
-     * 함수 이름 : register
-     * 기능 : 단일 디렉토리를 WatchService에 등록하여 CREATE/MODIFY/DELETE 이벤트를 감지할 수 있도록 한다.
-     * 매개변수 : dir - 등록할 디렉토리 경로
-     * 반환값 : 없음
-     * 예외 : IOException - 디렉토리 등록 실패 시
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
-    private void register(Path dir) throws IOException {
-        WatchKey key = dir.register(
-                watchService,
-                StandardWatchEventKinds.ENTRY_CREATE,
-                StandardWatchEventKinds.ENTRY_MODIFY,
-                StandardWatchEventKinds.ENTRY_DELETE
-        );
-        keyDirMap.put(key, dir);
-        log.debug("Registered directory for watching: {}", dir);
-    }
-
-    /**
      * 함수 이름 : stopWatching
-     * 기능 : 파일 감시를 중지하고 모든 리소스를 정리한다. 남은 윈도우 이벤트를 flush한다.
-     * 매개변수 : 없음
+     * 기능 : 해당 사용자의 파일 감시를 중지하고 리소스를 정리한다. 남은 윈도우 이벤트를 flush한다.
+     * 매개변수 : ownerKey - 사용자 키
      * 반환값 : 없음
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public synchronized void stopWatching() {
-        if (!running) {
-            log.info("Watcher is not running. ignore stopWatching request.");
+    public synchronized void stopWatching(String ownerKey) {
+        UserWatcherState state = userWatcherStates.get(ownerKey);
+        if (state == null || !state.running) {
+            log.info("Watcher is not running for ownerKey={}. ignore stopWatching.", ownerKey);
             return;
         }
 
-        running = false;
+        state.running = false;
 
-        if (watchService != null) {
+        if (state.watchService != null) {
             try {
-                watchService.close();
+                state.watchService.close();
             } catch (IOException e) {
-                log.warn("Failed to close WatchService", e);
+                log.warn("Failed to close WatchService for ownerKey={}", ownerKey, e);
             }
         }
 
-        if (watcherThread != null) {
-            watcherThread.interrupt();
+        if (state.watcherThread != null) {
+            state.watcherThread.interrupt();
             try {
-                watcherThread.join(3000);
+                state.watcherThread.join(3000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.warn("Interrupted while waiting for watcherThread to join", e);
             }
         }
 
-        keyDirMap.clear();
-        watchedRoots.clear();
+        state.keyDirMap.clear();
+        state.watchedRoots.clear();
+        userWatcherStates.remove(ownerKey);
 
         // 종료 시 남은 윈도우 flush
-        eventWindowAggregator.flushIfNeeded();
+        eventWindowAggregator.flushIfNeeded(ownerKey);
 
-        log.info("Stopped watching.");
+        log.info("Stopped watching for ownerKey={}", ownerKey);
     }
 
     /**
      * 함수 이름 : watchLoop
-     * 기능 : WatchService에서 이벤트를 지속적으로 수신하여 처리하는 메인 루프. 각 이벤트를 Collector와 Analytics로 전달한다.
-     * 매개변수 : 없음
+     * 기능 : WatchService에서 이벤트를 지속적으로 수신하여 처리하는 메인 루프.
+     * 매개변수 : state - 사용자 감시 상태
      * 반환값 : 없음
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    private void watchLoop() {
-        String ownerKey = sessionIdManager.getSessionId();
+    private void watchLoop(UserWatcherState state) {
+        String ownerKey = state.ownerKey;
         log.info("Watcher loop started. ownerKey={}", ownerKey);
 
         try {
-            while (running) {
+            while (state.running) {
                 WatchKey key;
                 try {
-                    key = watchService.take();
+                    key = state.watchService.take();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     log.info("Watcher loop interrupted");
@@ -203,10 +197,10 @@ public class WatcherService {
                     break;
                 }
 
-                Path dir = keyDirMap.get(key);
+                Path dir = state.keyDirMap.get(key);
                 if (dir == null) {
                     boolean valid = key.reset();
-                    if (!valid) keyDirMap.remove(key);
+                    if (!valid) state.keyDirMap.remove(key);
                     continue;
                 }
 
@@ -241,7 +235,7 @@ public class WatcherService {
                     if (kind == StandardWatchEventKinds.ENTRY_CREATE) {
                         if (Files.isDirectory(child)) {
                             try {
-                                registerAll(child);
+                                registerAll(state, child);
                             } catch (IOException e) {
                                 log.warn("Failed to register sub directory: {}", child, e);
                             }
@@ -251,8 +245,8 @@ public class WatcherService {
 
                 boolean valid = key.reset();
                 if (!valid) {
-                    keyDirMap.remove(key);
-                    if (keyDirMap.isEmpty()) {
+                    state.keyDirMap.remove(key);
+                    if (state.keyDirMap.isEmpty()) {
                         log.info("No directories are being watched anymore. stopping watchLoop.");
                         break;
                     }
@@ -261,8 +255,8 @@ public class WatcherService {
         } catch (Exception e) {
             log.error("Unexpected error in watcher loop", e);
         } finally {
-            running = false;
-            log.info("Watcher loop finished.");
+            state.running = false;
+            log.info("Watcher loop finished for ownerKey={}", ownerKey);
         }
     }
 
@@ -283,13 +277,14 @@ public class WatcherService {
 
     /**
      * 함수 이름 : isRunning
-     * 기능 : 현재 파일 감시가 실행 중인지 여부를 반환한다.
-     * 매개변수 : 없음
+     * 기능 : 해당 사용자의 파일 감시가 실행 중인지 여부를 반환한다.
+     * 매개변수 : ownerKey - 사용자 키
      * 반환값 : true면 실행 중, false면 중지됨
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
-    public boolean isRunning() {
-        return running;
+    public boolean isRunning(String ownerKey) {
+        UserWatcherState state = userWatcherStates.get(ownerKey);
+        return state != null && state.running;
     }
 }
