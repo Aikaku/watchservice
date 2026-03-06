@@ -2,6 +2,8 @@ package com.watchserviceagent.watchservice_agent.alerts;
 
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationPageResponse;
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationResponse;
+import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,9 +37,11 @@ public class NotificationController {
             @RequestParam(name = "to", required = false) String to,
             @RequestParam(name = "level", required = false) String level,
             @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "sort", required = false) String sort
+            @RequestParam(name = "sort", required = false) String sort,
+            HttpSession session
     ) {
-        return notificationService.getNotifications(page, size, from, to, level, keyword, sort);
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return notificationService.getNotifications(ownerKey, page, size, from, to, level, keyword, sort);
     }
 
     /**
@@ -49,8 +53,9 @@ public class NotificationController {
      * 작성자 : 시스템
      */
     @GetMapping("/{id}")
-    public NotificationResponse getNotification(@PathVariable("id") long id) {
-        return notificationService.getNotificationById(id);
+    public NotificationResponse getNotification(@PathVariable("id") long id, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return notificationService.getNotificationById(ownerKey, id);
     }
 }
 

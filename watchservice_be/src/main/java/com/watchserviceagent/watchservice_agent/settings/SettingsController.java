@@ -1,9 +1,11 @@
 package com.watchserviceagent.watchservice_agent.settings;
 
+import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import com.watchserviceagent.watchservice_agent.settings.dto.ExceptionRuleRequest;
 import com.watchserviceagent.watchservice_agent.settings.dto.ExceptionRuleResponse;
 import com.watchserviceagent.watchservice_agent.settings.dto.WatchedFolderRequest;
 import com.watchserviceagent.watchservice_agent.settings.dto.WatchedFolderResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -41,8 +43,9 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @GetMapping("/folders")
-    public List<WatchedFolderResponse> getWatchedFolders() {
-        List<WatchedFolderResponse> list = settingsService.getWatchedFolders();
+    public List<WatchedFolderResponse> getWatchedFolders(HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        List<WatchedFolderResponse> list = settingsService.getWatchedFolders(ownerKey);
         log.info("[SettingsController] GET /settings/folders -> {}건", list.size());
         return list;
     }
@@ -56,8 +59,9 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @PostMapping("/folders")
-    public WatchedFolderResponse addWatchedFolder(@RequestBody WatchedFolderRequest req) {
-        WatchedFolderResponse resp = settingsService.addWatchedFolder(req);
+    public WatchedFolderResponse addWatchedFolder(@RequestBody WatchedFolderRequest req, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        WatchedFolderResponse resp = settingsService.addWatchedFolder(ownerKey, req);
         log.info("[SettingsController] POST /settings/folders -> {}", resp);
         return resp;
     }
@@ -71,8 +75,9 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @DeleteMapping("/folders/{id}")
-    public void deleteWatchedFolder(@PathVariable("id") Long id) {
-        settingsService.deleteWatchedFolder(id);
+    public void deleteWatchedFolder(@PathVariable("id") Long id, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        settingsService.deleteWatchedFolder(ownerKey, id);
         log.info("[SettingsController] DELETE /settings/folders/{}", id);
     }
 
@@ -131,8 +136,9 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @GetMapping("/exceptions")
-    public List<ExceptionRuleResponse> getExceptionRules() {
-        List<ExceptionRuleResponse> list = settingsService.getExceptionRules();
+    public List<ExceptionRuleResponse> getExceptionRules(HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        List<ExceptionRuleResponse> list = settingsService.getExceptionRules(ownerKey);
         log.info("[SettingsController] GET /settings/exceptions -> {}건", list.size());
         return list;
     }
@@ -146,8 +152,9 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @PostMapping("/exceptions")
-    public ExceptionRuleResponse addExceptionRule(@RequestBody ExceptionRuleRequest req) {
-        ExceptionRuleResponse resp = settingsService.addExceptionRule(req);
+    public ExceptionRuleResponse addExceptionRule(@RequestBody ExceptionRuleRequest req, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        ExceptionRuleResponse resp = settingsService.addExceptionRule(ownerKey, req);
         log.info("[SettingsController] POST /settings/exceptions -> {}", resp);
         return resp;
     }
@@ -161,8 +168,9 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @DeleteMapping("/exceptions/{id}")
-    public void deleteExceptionRule(@PathVariable("id") Long id) {
-        settingsService.deleteExceptionRule(id);
+    public void deleteExceptionRule(@PathVariable("id") Long id, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        settingsService.deleteExceptionRule(ownerKey, id);
         log.info("[SettingsController] DELETE /settings/exceptions/{}", id);
     }
 }

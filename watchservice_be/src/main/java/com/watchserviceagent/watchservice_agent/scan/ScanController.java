@@ -1,8 +1,10 @@
 package com.watchserviceagent.watchservice_agent.scan;
 
+import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import com.watchserviceagent.watchservice_agent.scan.dto.ScanProgressResponse;
 import com.watchserviceagent.watchservice_agent.scan.dto.ScanStartRequest;
 import com.watchserviceagent.watchservice_agent.scan.dto.ScanStartResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +20,10 @@ public class ScanController {
 
     // POST /scan/start  {paths:[...], autoStartWatcher:true/false} -> {scanId}
     @PostMapping("/start")
-    public ScanStartResponse start(@RequestBody ScanStartRequest req) {
+    public ScanStartResponse start(@RequestBody ScanStartRequest req, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
         boolean auto = (req.getAutoStartWatcher() == null) ? true : req.getAutoStartWatcher();
-        String id = scanService.startScan(req.getPaths(), auto);
+        String id = scanService.startScan(ownerKey, req.getPaths(), auto);
         log.info("[ScanController] start scanId={} autoStartWatcher={}", id, auto);
         return ScanStartResponse.builder().scanId(id).build();
     }

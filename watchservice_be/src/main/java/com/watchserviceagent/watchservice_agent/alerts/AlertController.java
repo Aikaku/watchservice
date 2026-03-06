@@ -38,9 +38,11 @@ public class AlertController {
             @RequestParam(name = "to", required = false) String to,
             @RequestParam(name = "level", required = false) String level,
             @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "sort", required = false) String sort
+            @RequestParam(name = "sort", required = false) String sort,
+            HttpSession session
     ) {
-        return alertService.getAlerts(page, size, from, to, level, keyword, sort);
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return alertService.getAlerts(ownerKey, page, size, from, to, level, keyword, sort);
     }
 
     /**
@@ -52,8 +54,9 @@ public class AlertController {
      * 작성자 : 시스템
      */
     @GetMapping("/{id}")
-    public LogResponse getAlert(@PathVariable("id") long id) {
-        return alertService.getAlertById(id);
+    public LogResponse getAlert(@PathVariable("id") long id, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return alertService.getAlertById(ownerKey, id);
     }
 
     /**
@@ -68,8 +71,10 @@ public class AlertController {
     public AlertStatsResponse stats(
             @RequestParam(name = "range", defaultValue = "daily") String range,
             @RequestParam(name = "from", required = false) String from,
-            @RequestParam(name = "to", required = false) String to
+            @RequestParam(name = "to", required = false) String to,
+            HttpSession session
     ) {
-        return alertService.getStats(range, from, to);
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return alertService.getStats(ownerKey, range, from, to);
     }
 }

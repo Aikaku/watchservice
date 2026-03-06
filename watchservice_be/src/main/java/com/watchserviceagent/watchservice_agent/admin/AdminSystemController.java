@@ -54,7 +54,7 @@ public class AdminSystemController {
         result.put("totalSessions", logRepository.countLogsByOwnerKey().size());
 
         // Watcher 상태
-        result.put("watcherRunning", watcherService.isRunning());
+        result.put("watcherRunning", watcherService.isAnyRunning());
 
         // AI 서버 상태
         result.put("aiServerStatus", checkAiServer());

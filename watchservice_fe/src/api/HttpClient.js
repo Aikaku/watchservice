@@ -19,6 +19,7 @@ async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
 
   const finalOptions = {
+    credentials: 'include',
     ...options,
     headers: {
       ...(options.headers || {}),

@@ -151,7 +151,7 @@ public class ScanService {
 
                 if (!validRoots.isEmpty()) {
                     try {
-                        watcherService.startWatchingMultiple(validRoots);
+                        watcherService.startWatchingMultiple(ownerKey, validRoots);
                         log.info("[ScanService] scanId={} watcher auto-start OK roots={}", job.getScanId(), validRoots);
                     } catch (Exception e) {
                         log.warn("[ScanService] watcher auto-start failed: {}", e.getMessage(), e);

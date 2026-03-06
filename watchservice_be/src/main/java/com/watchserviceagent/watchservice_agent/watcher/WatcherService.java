@@ -287,4 +287,8 @@ public class WatcherService {
         UserWatcherState state = userWatcherStates.get(ownerKey);
         return state != null && state.running;
     }
+
+    public boolean isAnyRunning() {
+        return userWatcherStates.values().stream().anyMatch(s -> s.running);
+    }
 }
