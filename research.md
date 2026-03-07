@@ -442,16 +442,17 @@ preHandle():
 
 ---
 
-### 4.9 SessionIdManager
+### 4.9 OwnerKeyUtil (멀티유저 지원, 2026-03-06 리팩터링)
 
-**파일**: `common/util/SessionIdManager.java`
+**파일**: `common/util/OwnerKeyUtil.java`
 
-다중 사용자 격리를 위한 고유 식별자 관리.
+HTTP 세션 기반 다중 사용자 격리. (`SessionIdManager` 싱글톤 방식에서 전환)
 
-- 최초 실행 시 UUID 생성하여 `~/.watchservice/session_id` 파일에 영속 저장
-- 이후 재시작 시 파일에서 읽어 동일한 ownerKey 사용
-- 파일 I/O 실패 시 임시 UUID 사용 (재시작마다 새 UUID → 기존 데이터 접근 불가)
-- 모든 Repository 메서드에서 ownerKey 조건절로 데이터 격리
+- `OwnerKeyUtil.getOrCreate(HttpSession)`: 세션에 `"OWNER_KEY"` 속성이 없으면 UUID 신규 발급, 있으면 재사용
+- 브라우저 세션마다 독립적인 ownerKey → 사용자 데이터 혼용 없음
+- 모든 컨트롤러가 `HttpSession session`을 주입받아 ownerKey를 추출, 서비스 메서드에 명시적으로 전달
+- `WatcherService`, `EventWindowAggregator`는 ownerKey별 내부 상태(`UserWatcherState`, `UserWindowState`)를 `ConcurrentHashMap`으로 관리
+- 프론트엔드는 `credentials: 'include'`(HttpClient.js)로 세션 쿠키를 CORS 요청에 포함
 
 ---
 
@@ -949,9 +950,10 @@ POST /api/admin/login {username, password}
 
 ### 9.2 사용자 격리 (Multi-tenancy)
 
-- `SessionIdManager`가 UUID를 `~/.watchservice/session_id`에 영속
+- `OwnerKeyUtil.getOrCreate(HttpSession)`: 브라우저 세션마다 UUID 발급 (HTTP 세션 기반)
 - 모든 DB 쿼리에 `WHERE owner_key = ?` 조건 포함
 - 사용자 A의 로그는 사용자 B가 접근 불가
+- WatcherService·EventWindowAggregator는 ownerKey별 독립 상태 유지 (데이터·감시 스레드 분리)
 
 ### 9.3 CORS 설정
 
@@ -1087,7 +1089,7 @@ Sysmon EventID 매핑:
 | 이슈 | 설명 | 권고 |
 |------|------|------|
 | 관리자 비밀번호 평문 저장 | `AdminAuthService` 단순 문자열 비교 | BCrypt 해싱 적용 |
-| SessionIdManager I/O 실패 시 임시 UUID | 재시작마다 새 UUID → 기존 데이터 접근 불가 | 실패 시 예외 처리 또는 영속 fallback |
+| ~~SessionIdManager I/O 실패~~ | ✅ HTTP 세션 기반 OwnerKeyUtil로 전환 (2026-03-06) | — |
 | `java.awt.headless=false` | GUI 폴더 선택을 위해 전역 설정 | 서버 배포 환경 부적합 |
 
 ### 12.3 코드 품질
