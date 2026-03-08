@@ -33,7 +33,7 @@ ai:
 gemini:
   api-key: ${GEMINI_API_KEY:}
   model: ${GEMINI_MODEL:gemini-2.5-flash}
-  timeout-ms: ${GEMINI_TIMEOUT_MS:2500}
+  timeout-ms: ${GEMINI_TIMEOUT_MS:10000}
 
 admin:
   username: ${ADMIN_USERNAME:admin}

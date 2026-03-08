@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import com.watchserviceagent.watchservice_agent.ai.dto.FamilyPredictResponse;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 
 /**
@@ -22,6 +23,7 @@ import java.util.Map;
 public class AiController {
 
     private final AiService aiService;
+    private final GeminiAdviceService geminiAdviceService;
 
     /**
      * 함수 이름 : analyze
@@ -89,6 +91,45 @@ public class AiController {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
+    /**
+     * 함수 이름 : testGemini
+     * 기능 : XGBoost 서버 없이 Gemini guidance 생성만 직접 테스트한다. DANGER 시나리오로 고정 호출.
+     * 매개변수 : 없음
+     * 반환값 : Map - {"label", "score", "guidance"} 포함
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
+    @GetMapping("/gemini/test")
+    public Map<String, Object> testGemini() {
+        AiPayload payload = AiPayload.builder()
+                .fileWriteCount(5)
+                .fileDeleteCount(2)
+                .fileRenameCount(1)
+                .fileEncryptLikeCount(2)
+                .changedFilesCount(7)
+                .randomExtensionFlag(1)
+                .entropyDiffMean(1.5)
+                .fileSizeDiffMean(4096.0)
+                .build();
+
+        AiResult mockResult = AiResult.builder()
+                .label("DANGER")
+                .score(0.87)
+                .detail("top_family=LockBit, top_prob=0.87")
+                .topFamily("LockBit")
+                .isRansomware(true)
+                .guidance(null)
+                .build();
+
+        String guidance = geminiAdviceService.guidanceFor(payload, mockResult);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("label", mockResult.getLabel());
+        result.put("score", mockResult.getScore());
+        result.put("guidance", guidance);
+        return result;
+    }
+
     @GetMapping("/ping")
     public String ping() {
         return "AI endpoint alive";

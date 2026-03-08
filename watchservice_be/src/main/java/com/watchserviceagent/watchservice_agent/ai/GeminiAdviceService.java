@@ -159,10 +159,11 @@ SOC 방어조치 전문가. 수비 관점 조치만 작성(공격정보·코드 
                         "parts", new Object[]{Map.of("text", prompt)}
                 )
         });
-        body.put("generationConfig", Map.of(
-                "temperature", 0.2,
-                "maxOutputTokens", 400
-        ));
+        Map<String, Object> generationConfig = new LinkedHashMap<>();
+        generationConfig.put("temperature", 0.2);
+        generationConfig.put("maxOutputTokens", 1500);
+        generationConfig.put("thinkingConfig", Map.of("thinkingBudget", 0));
+        body.put("generationConfig", generationConfig);
 
         // ✅ “Gemini로 보내는 JSON” 로그로 보기 (직렬화 실패해도 호출은 계속)
         try {
