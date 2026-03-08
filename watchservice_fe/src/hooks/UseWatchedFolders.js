@@ -7,7 +7,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   fetchWatchedFolders,
-  pickFolderPath,
   createWatchedFolder,
   deleteWatchedFolder,
 } from '../api/SettingApi';
@@ -62,29 +61,13 @@ export function useWatchedFolders() {
 
   useEffect(() => {
     refresh();
-  }, [refresh]); // ✅ eslint 경고 해결 포인트
+  }, [refresh]);
 
-  // ✅ 기존 페이지가 onAddFolder로 쓰는 이름 유지(호환)
-  const promptAndAddFolder = useCallback(async () => {
-    try {
-      // 1) 백엔드 폴더 선택 다이얼로그 호출
-      const picked = await pickFolderPath();
-
-      // 백엔드가 {path:"..."} 로 주든, 문자열로 주든 둘 다 처리
-      const path = typeof picked === 'string' ? picked : (picked?.path ?? '');
-      if (!path) return; // 사용자가 취소했으면 그냥 종료
-
-      // 2) 표시 이름(선택)
-      const defaultName = guessNameFromPath(path);
-      const name = window.prompt('폴더 이름(표시용)을 입력하세요', defaultName) || defaultName;
-
-      await createWatchedFolder({ name, path });
-      await refresh();
-    } catch (e) {
-      // 폴더 선택 다이얼로그 실패 시에는 경로를 직접 입력받지 않고 에러만 알림
-      console.error('pickFolderPath error:', e);
-      alert('폴더 선택 다이얼로그 실행에 실패했습니다.\n백엔드 로그를 확인해 주세요.\n\n' + e.message);
-    }
+  // path: 실제 경로, name: 표시 이름 (비어있으면 경로에서 자동 추출)
+  const addFolder = useCallback(async (path, name) => {
+    const displayName = (name && name.trim()) ? name.trim() : guessNameFromPath(path);
+    await createWatchedFolder({ name: displayName, path });
+    await refresh();
   }, [refresh]);
 
   const removeFolder = useCallback(async (id) => {
@@ -92,5 +75,5 @@ export function useWatchedFolders() {
     await refresh();
   }, [refresh]);
 
-  return { folders, loading, error, refresh, promptAndAddFolder, removeFolder };
+  return { folders, loading, error, refresh, addFolder, removeFolder };
 }

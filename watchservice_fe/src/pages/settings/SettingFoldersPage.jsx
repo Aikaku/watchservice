@@ -22,7 +22,7 @@ function SettingFoldersPage() {
     loading,
     error,
     refresh,
-    promptAndAddFolder,
+    addFolder,
     removeFolder,
   } = useWatchedFolders();
 
@@ -48,7 +48,7 @@ function SettingFoldersPage() {
 
       <FolderListManager
         folders={folders || []}
-        onAddFolder={promptAndAddFolder}
+        onAddFolder={addFolder}
         onRemoveFolder={removeFolder}
       />
     </div>

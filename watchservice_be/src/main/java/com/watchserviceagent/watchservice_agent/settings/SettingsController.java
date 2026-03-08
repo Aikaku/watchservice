@@ -8,16 +8,11 @@ import com.watchserviceagent.watchservice_agent.settings.dto.WatchedFolderRespon
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.JFileChooser;
-import java.awt.EventQueue;
-import java.awt.GraphicsEnvironment;
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 클래스 이름 : SettingsController
@@ -33,6 +28,51 @@ import java.util.concurrent.atomic.AtomicReference;
 public class SettingsController {
 
     private final SettingsService settingsService;
+
+    /**
+     * 함수 이름 : browseDirectory
+     * 기능 : 서버 파일시스템의 특정 경로에 있는 하위 디렉토리 목록을 반환한다.
+     * 매개변수 : path - 탐색할 경로 (빈 값이면 홈 디렉토리)
+     * 반환값 : 현재 경로와 하위 디렉토리 목록
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
+    @GetMapping("/folders/browse")
+    public Map<String, Object> browseDirectory(@RequestParam(value = "path", defaultValue = "") String path) {
+        File dir;
+        if (path == null || path.isBlank()) {
+            dir = new File(System.getProperty("user.home"));
+        } else {
+            dir = new File(path);
+        }
+
+        if (!dir.exists() || !dir.isDirectory()) {
+            dir = new File(System.getProperty("user.home"));
+        }
+
+        File[] children = dir.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."));
+        List<Map<String, String>> entries = new ArrayList<>();
+        if (children != null) {
+            Arrays.stream(children)
+                    .sorted(Comparator.comparing(File::getName, String.CASE_INSENSITIVE_ORDER))
+                    .forEach(f -> {
+                        Map<String, String> entry = new LinkedHashMap<>();
+                        entry.put("name", f.getName());
+                        entry.put("path", f.getAbsolutePath());
+                        entries.add(entry);
+                    });
+        }
+
+        // 상위 폴더 경로 계산
+        String parentPath = dir.getParent();
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("current", dir.getAbsolutePath());
+        result.put("parent", parentPath);
+        result.put("entries", entries);
+        log.info("[SettingsController] GET /settings/folders/browse?path={} -> {}개 항목", dir.getAbsolutePath(), entries.size());
+        return result;
+    }
 
     /**
      * 함수 이름 : getWatchedFolders
@@ -79,52 +119,6 @@ public class SettingsController {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         settingsService.deleteWatchedFolder(ownerKey, id);
         log.info("[SettingsController] DELETE /settings/folders/{}", id);
-    }
-
-    /**
-     * 함수 이름 : pickFolder
-     * 기능 : GUI 폴더 선택 다이얼로그를 열어 사용자가 폴더를 선택할 수 있게 한다. (headless 환경에서는 사용 불가)
-     * 매개변수 : 없음
-     * 반환값 : ResponseEntity - 선택된 폴더 경로 또는 에러 메시지
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
-    @GetMapping("/folders/pick")
-    public ResponseEntity<?> pickFolder() {
-        try {
-            // 혹시라도 JVM이 headless 로 떠 있으면 바로 에러 응답 (예외 대신)
-            if (GraphicsEnvironment.isHeadless()) {
-                log.error("[SettingsController] 현재 JVM이 headless 모드입니다. 폴더 선택 다이얼로그를 열 수 없습니다.");
-                return ResponseEntity.status(409).body("Headless environment: cannot open folder picker");
-            }
-
-            AtomicReference<String> pickedPath = new AtomicReference<>("");
-
-            Runnable job = () -> {
-                JFileChooser chooser = new JFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                chooser.setDialogTitle("감시 폴더 선택");
-                chooser.setAcceptAllFileFilterUsed(false);
-
-                int result = chooser.showOpenDialog(null);
-                if (result == JFileChooser.APPROVE_OPTION) {
-                    File selected = chooser.getSelectedFile();
-                    pickedPath.set(selected != null ? selected.getAbsolutePath() : "");
-                } else {
-                    pickedPath.set("");
-                }
-            };
-
-            // EDT 처리
-            if (EventQueue.isDispatchThread()) job.run();
-            else EventQueue.invokeAndWait(job);
-
-            String path = pickedPath.get();
-            return ResponseEntity.ok(Map.of("path", path == null ? "" : path));
-        } catch (Exception e) {
-            log.error("[SettingsController] folder pick failed", e);
-            return ResponseEntity.internalServerError().body("folder pick failed: " + e.getMessage());
-        }
     }
 
     /**

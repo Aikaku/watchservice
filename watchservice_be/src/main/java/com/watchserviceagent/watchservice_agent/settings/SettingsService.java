@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,11 +37,18 @@ public class SettingsService {
     }
 
     public WatchedFolderResponse addWatchedFolder(String ownerKey, WatchedFolderRequest req) {
+        if (req.getPath() == null || req.getPath().isBlank()) {
+            throw new IllegalArgumentException("경로를 입력해 주세요.");
+        }
+        if (!Files.isDirectory(Paths.get(req.getPath().trim()))) {
+            throw new IllegalArgumentException("존재하지 않는 폴더 경로입니다: " + req.getPath());
+        }
+
         String name = (req.getName() == null || req.getName().isBlank())
                 ? req.getPath()
                 : req.getName();
 
-        WatchedFolder folder = settingsRepository.insertWatchedFolder(ownerKey, name, req.getPath());
+        WatchedFolder folder = settingsRepository.insertWatchedFolder(ownerKey, name, req.getPath().trim());
         log.info("[SettingsService] 감시 폴더 추가: {}", folder);
         return WatchedFolderResponse.from(folder);
     }

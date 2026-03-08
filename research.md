@@ -369,10 +369,11 @@ SOC 방어조치 전문가. 수비 관점 조치만 작성(공격정보·코드 
 ```
 
 **Gemini 호출 파라미터:**
-- 모델: `gemini-1.5-flash` (application.yml 설정값)
+- 모델: `gemini-2.5-flash` (application.yml 설정값)
 - temperature: `0.2`
-- maxOutputTokens: `400`
-- timeout: `2500ms`
+- maxOutputTokens: `1500`
+- timeout: `10000ms`
+- thinkingConfig.thinkingBudget: `0` (thinking 비활성화 — thinking 토큰이 출력 토큰을 소비하는 문제 방지)
 
 **fallbackGuidance 내용 (하드코딩):**
 - [즉시 조치]: 네트워크 분리, 파일 경로 확인, 백업 접근 제한, 로그 보존
@@ -403,27 +404,24 @@ SOC 방어조치 전문가. 수비 관점 조치만 작성(공격정보·코드 
 
 ---
 
-### 4.7 SettingsController — GUI 폴더 선택
+### 4.7 SettingsController — 폴더 등록
 
 **파일**: `settings/SettingsController.java`
 
-`GET /settings/folders/pick` 엔드포인트가 특이하다.
+폴더 추가는 프론트엔드에서 경로 텍스트를 직접 입력받아 `POST /settings/folders`로 전송한다. (2026-03-08 리팩터링)
 
-```java
-// Java Swing JFileChooser를 백엔드 서버에서 직접 열어
-// 사용자가 GUI로 폴더를 선택하게 함
-JFileChooser chooser = new JFileChooser();
-chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-EventQueue.invokeAndWait(() → {
-    int result = chooser.showOpenDialog(null);
-    if (result == JFileChooser.APPROVE_OPTION)
-        ref.set(chooser.getSelectedFile().getAbsolutePath());
-});
-```
+**엔드포인트:**
+- `GET /settings/folders` — 등록된 폴더 목록 조회
+- `POST /settings/folders` — 폴더 추가 (`{name, path}`)
+- `DELETE /settings/folders/{id}` — 폴더 삭제
 
-- `application.yml`에 `java.awt.headless=false` 설정 필수
-- headless 환경이면 409 Conflict 반환
-- WatchService Agent가 로컬 데스크톱 앱으로 동작하기 때문에 가능한 설계
+**경로 유효성 검사 (`SettingsService.addWatchedFolder`):**
+- 빈 경로 → `IllegalArgumentException`
+- `Files.isDirectory()` 실패 시 → `IllegalArgumentException("존재하지 않는 폴더 경로")`
+
+**제거된 항목 (2026-03-08):**
+- `GET /settings/folders/pick` 엔드포인트 삭제 — Java Swing `JFileChooser`로 서버 화면에 GUI 다이얼로그를 띄우는 방식 제거
+- `application.yml` `spring.main.headless: false` → `true` 로 변경
 
 ---
 
@@ -993,9 +991,9 @@ ai:
     url: http://localhost:8001/predict      # FastAPI 패밀리 분류
 
 gemini:
-  api-key: ${GEMINI_API_KEY:}              # 환경변수로 주입
-  model: gemini-1.5-flash
-  timeout-ms: 2500
+  api-key: ${GEMINI_API_KEY:}              # 환경변수로 주입 (.env + start.sh)
+  model: gemini-2.5-flash
+  timeout-ms: 10000
 
 admin:
   username: ${ADMIN_USERNAME:admin}
@@ -1090,7 +1088,7 @@ Sysmon EventID 매핑:
 |------|------|------|
 | 관리자 비밀번호 평문 저장 | `AdminAuthService` 단순 문자열 비교 | BCrypt 해싱 적용 |
 | ~~SessionIdManager I/O 실패~~ | ✅ HTTP 세션 기반 OwnerKeyUtil로 전환 (2026-03-06) | — |
-| `java.awt.headless=false` | GUI 폴더 선택을 위해 전역 설정 | 서버 배포 환경 부적합 |
+| ~~`java.awt.headless=false`~~ | ✅ JFileChooser 제거, 프론트 텍스트 입력으로 전환, headless: true (2026-03-08) | — |
 
 ### 12.3 코드 품질
 
@@ -1109,7 +1107,7 @@ Sysmon EventID 매핑:
 | `FileSnapshotStore` | 인메모리 캐시, 서버 재시작 시 초기화 → 첫 이벤트에 before 값 없음 |
 | 비동기 로그 저장 | `LogService.saveAsync()` → 큐 기반, DB 쓰기 블로킹 없음 |
 | SQLite 단일 쓰기 | 동시 쓰기 시 WAL 모드 미설정 → 부하 시 잠금 경합 가능 |
-| Gemini 타임아웃 | 2500ms, 초과 시 fallbackGuidance 반환 |
+| Gemini 타임아웃 | 10000ms, 초과 시 fallbackGuidance 반환. thinking 비활성화(thinkingBudget=0), maxOutputTokens=1500 (2026-03-08 조정) |
 | AI 서버 타임아웃 | RestTemplate 기본값 (무한), AI 서버 다운 시 블로킹 위험 |
 
 ---

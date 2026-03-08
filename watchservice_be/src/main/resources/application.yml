@@ -3,7 +3,7 @@ spring:
     name: watchservice-agent
 
   main:
-    headless: false
+    headless: true
 
   datasource:
     url: jdbc:sqlite:log.db          # ✅ 프로젝트 루트에 log.db 생성/사용

@@ -22,6 +22,7 @@ import SettingExceptionsPage from './pages/settings/SettingExceptionsPage';
 import SettingResetPage from './pages/settings/SettingResetPage';
 import SettingUpdatePage from './pages/settings/SettingUpdatePage';
 import SettingFeedbackPage from './pages/settings/SettingFeedbackPage';
+import SettingGuidePage from './pages/settings/SettingGuidePage';
 
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminMainPage from './pages/admin/AdminMainPage';
@@ -31,6 +32,7 @@ import AdminLogPage from './pages/admin/AdminLogPage';
 import AdminAlertPage from './pages/admin/AdminAlertPage';
 import AdminSessionPage from './pages/admin/AdminSessionPage';
 import AdminSystemPage from './pages/admin/AdminSystemPage';
+import AdminGuidePage from './pages/admin/AdminGuidePage';
 import UserNoticePage from './pages/notice/UserNoticePage';
 
 /**
@@ -68,6 +70,7 @@ function App() {
           <Route path="/settings/reset" element={<SettingResetPage />} />
           <Route path="/settings/update" element={<SettingUpdatePage />} />
           <Route path="/settings/feedback" element={<SettingFeedbackPage />} />
+          <Route path="/settings/guide" element={<SettingGuidePage />} />
 
           {/* 관리자 */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -78,6 +81,7 @@ function App() {
           <Route path="/admin/alerts" element={<AdminAlertPage />} />
           <Route path="/admin/sessions" element={<AdminSessionPage />} />
           <Route path="/admin/system" element={<AdminSystemPage />} />
+          <Route path="/admin/guide" element={<AdminGuidePage />} />
         </Routes>
       </MainLayout>
     </BrowserRouter>

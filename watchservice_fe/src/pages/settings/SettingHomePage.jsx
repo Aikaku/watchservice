@@ -26,6 +26,7 @@ function SettingHomePage() {
     { title: '초기화', desc: '설정/캐시 초기화(백엔드 미구현 가능)', path: '/settings/reset' },
     { title: '업데이트', desc: '버전/업데이트 확인(백엔드 미구현 가능)', path: '/settings/update' },
     { title: '문의/피드백', desc: '버그·문의 제출(백엔드 미구현 가능)', path: '/settings/feedback' },
+    { title: '사용 가이드', desc: 'WatchService 사용 방법 안내', path: '/settings/guide' },
   ];
 
   return (

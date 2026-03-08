@@ -2,7 +2,7 @@
  * 파일 이름 : AdminApi.js
  * 기능 : 관리자 로그인 및 피드백/공지 관리 API 래퍼를 제공한다.
  */
-import { get, post, del } from './HttpClient';
+import { get, post, del, put } from './HttpClient';
 
 export function adminLogin(username, password) {
   return post('/api/admin/login', { username, password });
@@ -90,5 +90,14 @@ export function fetchAdminSessions() {
 // ===== 시스템 상태 =====
 export function fetchAdminSystem() {
   return get('/api/admin/system');
+}
+
+// ===== 사용 가이드 =====
+export function fetchGuide() {
+  return get('/api/guide');
+}
+
+export function updateGuide(content) {
+  return put('/api/admin/guide', { content });
 }
 

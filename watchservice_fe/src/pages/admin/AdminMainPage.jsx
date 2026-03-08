@@ -44,6 +44,9 @@ function AdminMainPage() {
         <li>
           <Link to="/admin/system">시스템 상태 모니터링</Link>
         </li>
+        <li>
+          <Link to="/admin/guide">사용 가이드 편집</Link>
+        </li>
       </ul>
     </div>
   );

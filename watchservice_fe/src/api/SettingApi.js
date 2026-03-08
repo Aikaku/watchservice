@@ -57,14 +57,9 @@ export async function fetchWatchedFolders() {
   return request('/settings/folders', { method: 'GET' });
 }
 
-// ✅ 폴더 선택 다이얼로그 호출(백엔드 Swing)
-export async function pickFolderPath() {
-  return request('/settings/folders/pick', { method: 'GET' });
-}
-
-// ✅ useWatchedFolders.js에서 쓰는 이름으로 별칭 제공 (둘 다 동작)
-export async function pickWatchedFolderPath() {
-  return pickFolderPath();
+export async function browseFolders(path = '') {
+  const qs = path ? `?path=${encodeURIComponent(path)}` : '';
+  return request(`/settings/folders/browse${qs}`, { method: 'GET' });
 }
 
 export async function createWatchedFolder(payload) {
