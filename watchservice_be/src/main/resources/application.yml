@@ -37,6 +37,9 @@ gemini:
 
 admin:
   username: ${ADMIN_USERNAME:admin}
+  # 평문 또는 BCrypt 해시 모두 지원
+  # BCrypt 해시로 교체하려면: new BCryptPasswordEncoder().encode("yourPassword") 값을 ADMIN_PASSWORD에 설정
+  # 예: ADMIN_PASSWORD=$2a$10$xxx...
   password: ${ADMIN_PASSWORD:123456789}
 
 watchservice:

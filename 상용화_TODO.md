@@ -11,11 +11,10 @@
 - ~~JFileChooser Swing 다이얼로그 제거, 서버 파일시스템 탐색 모달로 교체~~
 - ~~headless 서버 / Docker / 원격 서버 환경 지원~~
 
-### ☐ 관리자 비밀번호 BCrypt 해싱
-- **현재**: `ADMIN_PASSWORD` 환경변수와 평문 비교
-- **위험**: 코드/설정 파일 노출 시 즉시 크리덴셜 탈취
-- **수정 방향**: Spring Security `BCryptPasswordEncoder` 도입, 초기 비밀번호 해시로 저장
-- **관련 파일**: `admin/AdminAuthInterceptor.java`
+### ~~관리자 비밀번호 BCrypt 해싱~~ (완료 2026-03-09)
+- ~~`ADMIN_PASSWORD` 값이 `$2a$`/`$2b$`로 시작하면 BCrypt 검증, 아니면 평문 비교 (기존 배포 호환)~~
+- ~~`spring-security-crypto` 의존성 추가~~
+- ~~`start.sh`에 JAVA_HOME=Java 17 명시 (Gradle 8.x가 Java 25 미지원)~~
 
 ---
 
