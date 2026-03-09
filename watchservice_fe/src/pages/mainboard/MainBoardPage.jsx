@@ -10,6 +10,7 @@ import { useWatchedFolders } from '../../hooks/UseWatchedFolders';
 import { useLogs } from '../../hooks/UseLogs';
 import { fetchDashboardSummary } from '../../api/DashboardApi';
 import { startScan, pauseScan, fetchScanProgress } from '../../api/ScanApi';
+import { useToast } from '../../components/common/Toast';
 
 import ProtectionStatusBadge from '../../components/protection/ProtectionStatusBadge';
 import ScanControlPanel from '../../components/protection/ScanControlPanel';
@@ -24,6 +25,7 @@ import RecentEventsPanel from '../../components/protection/RecentEventsPanel';
  * 작성자 : 시스템
  */
 function MainBoardPage() {
+  const toast = useToast();
   /** 대시보드 요약 상태 */
   const [protectionStatus, setProtectionStatus] = useState('안전');
   const [statusCode, setStatusCode] = useState('SAFE');
@@ -123,7 +125,7 @@ function MainBoardPage() {
 
     if (!isWatching) {
       if (!target?.path) {
-        alert('감시할 폴더가 없습니다.\n먼저 "폴더 추가"에서 경로를 등록해주세요.');
+        toast('감시할 폴더가 없습니다. 먼저 "폴더 추가"에서 경로를 등록해주세요.', 'warn');
         return;
       }
       try {
@@ -131,7 +133,7 @@ function MainBoardPage() {
         setIsWatching(true);
       } catch (e) {
         console.error(e);
-        alert('감시 시작 중 오류가 발생했습니다.\n' + e.message);
+        toast('감시 시작 중 오류가 발생했습니다. ' + e.message, 'error');
       }
       return;
     }
@@ -141,7 +143,7 @@ function MainBoardPage() {
       setIsWatching(false);
     } catch (e) {
       console.error(e);
-      alert('감시 중지 중 오류가 발생했습니다.\n' + e.message);
+      toast('감시 중지 중 오류가 발생했습니다. ' + e.message, 'error');
     }
   };
 
@@ -156,7 +158,7 @@ function MainBoardPage() {
   const handleScanNow = async () => {
     const paths = folders.map((f) => f.path).filter(Boolean);
     if (paths.length === 0) {
-      alert('검사할 폴더가 없습니다.\n먼저 "폴더 추가"에서 경로를 등록해주세요.');
+      toast('검사할 폴더가 없습니다. 먼저 "폴더 추가"에서 경로를 등록해주세요.', 'warn');
       return;
     }
 
@@ -187,7 +189,7 @@ function MainBoardPage() {
         setIsWatching(true);
       } catch (e2) {
         console.error(e2);
-        alert('즉시 검사 시작 중 오류가 발생했습니다.\n' + e2.message);
+        toast('즉시 검사 시작 중 오류가 발생했습니다. ' + e2.message, 'error');
       } finally {
         setIsScanning(false);
         setScanProgress(0);
@@ -223,7 +225,7 @@ function MainBoardPage() {
       }
     } catch (e) {
       console.error(e);
-      alert('검사 중지 중 오류가 발생했습니다.\n' + e.message);
+      toast('검사 중지 중 오류가 발생했습니다. ' + e.message, 'error');
     } finally {
       setIsScanning(false);
     }

@@ -4,8 +4,12 @@
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { fetchAdminLogs, deleteAdminLog, deleteAdminLogs } from '../../api/AdminApi';
+import { useToast } from '../../components/common/Toast';
+import { useConfirm } from '../../components/common/ConfirmModal';
 
 function AdminLogPage() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [data, setData] = useState({ items: [], total: 0, page: 1, size: 50 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,23 +46,23 @@ function AdminLogPage() {
   const handleSearch = () => { setPage(1); load(1); };
 
   const handleDelete = async (id) => {
-    if (!window.confirm(`로그 #${id}를 삭제하시겠습니까?`)) return;
+    if (!await confirm(`로그 #${id}를 삭제하시겠습니까?`)) return;
     try {
       await deleteAdminLog(id);
       load(page);
     } catch (e) {
-      alert('삭제 실패: ' + e.message);
+      toast('삭제 실패: ' + e.message, 'error');
     }
   };
 
   const handleBulkDelete = async () => {
     if (selected.size === 0) return;
-    if (!window.confirm(`선택된 ${selected.size}개 로그를 삭제하시겠습니까?`)) return;
+    if (!await confirm(`선택된 ${selected.size}개 로그를 삭제하시겠습니까?`)) return;
     try {
       await deleteAdminLogs([...selected]);
       load(page);
     } catch (e) {
-      alert('삭제 실패: ' + e.message);
+      toast('삭제 실패: ' + e.message, 'error');
     }
   };
 

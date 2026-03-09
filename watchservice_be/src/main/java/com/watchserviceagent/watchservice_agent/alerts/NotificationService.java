@@ -11,8 +11,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
@@ -106,6 +108,31 @@ public class NotificationService {
      */
     public void saveNotification(Notification notification) {
         notificationRepository.insertNotification(notification);
+    }
+
+    /**
+     * 함수 이름 : getStats
+     * 기능 : 현재 사용자의 ai_label별 알림 카운트 통계를 반환한다.
+     * 반환값 : Map - {total, DANGER, WARNING, SAFE, UNKNOWN} 카운트
+     */
+    public Map<String, Object> getStats(String ownerKey) {
+        Map<String, Long> labelCount = notificationRepository.countByLabelForOwner(ownerKey);
+        long danger  = labelCount.getOrDefault("DANGER",  0L);
+        long warning = labelCount.getOrDefault("WARNING", 0L);
+        long safe    = labelCount.getOrDefault("SAFE",    0L);
+        long unknown = labelCount.getOrDefault("UNKNOWN", 0L);
+        long total   = danger + warning + safe + unknown;
+
+        Map<String, Object> counter = new HashMap<>();
+        counter.put("total",   total);
+        counter.put("DANGER",  danger);
+        counter.put("WARNING", warning);
+        counter.put("SAFE",    safe);
+        counter.put("UNKNOWN", unknown);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("counter", counter);
+        return result;
     }
 
     /**

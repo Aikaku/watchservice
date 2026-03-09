@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 @Slf4j
 @RestController
 @RequestMapping("/watcher")

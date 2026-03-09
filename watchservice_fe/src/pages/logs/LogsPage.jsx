@@ -6,6 +6,8 @@
  */
 import React, { useMemo, useState } from 'react';
 import { useLogs } from '../../hooks/UseLogs';
+import { useToast } from '../../components/common/Toast';
+import { useConfirm } from '../../components/common/ConfirmModal';
 import LogFilterBar from '../../components/logs/LogFilterBar';
 import LogTable from '../../components/logs/LogTable';
 import LogDetailModal from '../../components/logs/LogDetailModal';
@@ -51,6 +53,8 @@ function downloadJson(filename, obj) {
  * 작성자 : 시스템
  */
 function LogsPage() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const {
     logs,
     loading,
@@ -171,7 +175,7 @@ function LogsPage() {
   };
 
   const handleDeleteOne = async (id) => {
-    if (!window.confirm(`로그(ID=${id})를 삭제할까요?`)) return;
+    if (!await confirm(`로그(ID=${id})를 삭제할까요?`)) return;
 
     try {
       await deleteLog(id);
@@ -183,14 +187,14 @@ function LogsPage() {
       setSelectedLog(null);
       refresh();
     } catch (e) {
-      alert(`삭제 실패: ${e.message}`);
+      toast(`삭제 실패: ${e.message}`, 'error');
     }
   };
 
   const handleDeleteSelected = async () => {
     const ids = Array.from(selectedIds);
-    if (ids.length === 0) return alert('선택된 로그가 없습니다.');
-    if (!window.confirm(`선택한 로그 ${ids.length}개를 삭제할까요?`)) return;
+    if (ids.length === 0) { toast('선택된 로그가 없습니다.', 'warn'); return; }
+    if (!await confirm(`선택한 로그 ${ids.length}개를 삭제할까요?`)) return;
 
     try {
       await deleteLogs(ids);
@@ -198,7 +202,7 @@ function LogsPage() {
       setSelectedLog(null);
       refresh();
     } catch (e) {
-      alert(`삭제 실패: ${e.message}`);
+      toast(`삭제 실패: ${e.message}`, 'error');
     }
   };
 
@@ -234,7 +238,7 @@ function LogsPage() {
 
       downloadText(`logs_${Date.now()}.csv`, String(res || ''), 'text/csv;charset=utf-8');
     } catch (e) {
-      alert(`내보내기 실패: ${e.message}`);
+      toast(`내보내기 실패: ${e.message}`, 'error');
     }
   };
 

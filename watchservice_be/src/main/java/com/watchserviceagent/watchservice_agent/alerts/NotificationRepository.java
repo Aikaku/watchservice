@@ -314,6 +314,23 @@ public class NotificationRepository {
         }
     }
 
+    /**
+     * 사용자(ownerKey)의 ai_label별 카운트 통계를 조회한다.
+     * 반환 Map: key=ai_label(null인 경우 "UNKNOWN"), value=count
+     */
+    public Map<String, Long> countByLabelForOwner(String ownerKey) {
+        String sql = "SELECT COALESCE(ai_label, 'UNKNOWN') AS label, COUNT(*) AS cnt " +
+                     "FROM notification WHERE owner_key = ? GROUP BY label";
+        List<Map.Entry<String, Long>> rows = jdbcTemplate.query(
+                sql,
+                (rs, n) -> Map.entry(rs.getString("label"), rs.getLong("cnt")),
+                ownerKey
+        );
+        Map<String, Long> result = new HashMap<>();
+        for (Map.Entry<String, Long> e : rows) result.put(e.getKey(), e.getValue());
+        return result;
+    }
+
     // ====== ADMIN 전용 메서드들 (owner_key 필터 없음) ======
 
     public long countNotificationsAdmin(Long fromEpochMs, Long toEpochMs, String keyword, String level) {

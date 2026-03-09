@@ -18,7 +18,6 @@ import java.util.Map;
  */
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class GuideController {
 
     private final GuideService guideService;

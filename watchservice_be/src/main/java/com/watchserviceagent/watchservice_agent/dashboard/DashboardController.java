@@ -25,7 +25,6 @@ import java.util.List;
 @RequestMapping("/dashboard")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class DashboardController {
 
     private final AlertService alertService;

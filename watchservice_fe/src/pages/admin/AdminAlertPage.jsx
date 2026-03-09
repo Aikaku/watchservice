@@ -4,8 +4,12 @@
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { fetchAdminAlerts, deleteAdminAlert } from '../../api/AdminApi';
+import { useToast } from '../../components/common/Toast';
+import { useConfirm } from '../../components/common/ConfirmModal';
 
 function AdminAlertPage() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [data, setData] = useState({ items: [], total: 0, page: 1, size: 50 });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -38,12 +42,12 @@ function AdminAlertPage() {
   const handleSearch = () => { setPage(1); load(1); };
 
   const handleDelete = async (id) => {
-    if (!window.confirm(`알림 #${id}를 삭제하시겠습니까?`)) return;
+    if (!await confirm(`알림 #${id}를 삭제하시겠습니까?`)) return;
     try {
       await deleteAdminAlert(id);
       load(page);
     } catch (e) {
-      alert('삭제 실패: ' + e.message);
+      toast('삭제 실패: ' + e.message, 'error');
     }
   };
 

@@ -5,15 +5,18 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { adminLogout } from '../../api/AdminApi';
+import { useToast } from '../../components/common/Toast';
 
 function AdminMainPage() {
+  const toast = useToast();
+
   const handleLogout = async () => {
     try {
       await adminLogout();
       window.location.href = '/admin/login';
     } catch (e) {
       console.error(e);
-      alert('로그아웃 중 오류가 발생했습니다.');
+      toast('로그아웃 중 오류가 발생했습니다.', 'error');
     }
   };
 

@@ -7,6 +7,8 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import MainLayout from './layout/MainLayout';
+import { ToastProvider } from './components/common/Toast';
+import { ConfirmProvider } from './components/common/ConfirmModal';
 import MainBoardPage from './pages/mainboard/MainBoardPage';
 
 import NotificationPage from './pages/notifications/NotificationPage';
@@ -45,6 +47,8 @@ import UserNoticePage from './pages/notice/UserNoticePage';
  */
 function App() {
   return (
+    <ToastProvider>
+    <ConfirmProvider>
     <BrowserRouter>
       <MainLayout>
         <Routes>
@@ -85,6 +89,8 @@ function App() {
         </Routes>
       </MainLayout>
     </BrowserRouter>
+    </ConfirmProvider>
+    </ToastProvider>
   );
 }
 

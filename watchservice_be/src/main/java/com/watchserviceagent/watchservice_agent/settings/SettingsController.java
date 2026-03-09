@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/settings")
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 public class SettingsController {
 
     private final SettingsService settingsService;

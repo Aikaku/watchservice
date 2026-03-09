@@ -4,8 +4,12 @@
  */
 import React, { useEffect, useState } from 'react';
 import { fetchNotices, createNotice, deleteNotice } from '../../api/AdminApi';
+import { useToast } from '../../components/common/Toast';
+import { useConfirm } from '../../components/common/ConfirmModal';
 
 function AdminNoticePage() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [items, setItems] = useState([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -33,7 +37,7 @@ function AdminNoticePage() {
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!content.trim()) {
-      alert('내용을 입력하세요.');
+      toast('내용을 입력하세요.', 'warn');
       return;
     }
     try {
@@ -41,20 +45,21 @@ function AdminNoticePage() {
       setTitle('');
       setContent('');
       load();
+      toast('공지사항이 등록되었습니다.', 'success');
     } catch (e) {
       console.error(e);
-      alert('등록 중 오류가 발생했습니다.');
+      toast('등록 중 오류가 발생했습니다.', 'error');
     }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('이 공지를 삭제하시겠습니까?')) return;
+    if (!await confirm('이 공지를 삭제하시겠습니까?')) return;
     try {
       await deleteNotice(id);
       load();
     } catch (e) {
       console.error(e);
-      alert('삭제 중 오류가 발생했습니다.');
+      toast('삭제 중 오류가 발생했습니다.', 'error');
     }
   };
 

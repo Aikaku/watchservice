@@ -4,8 +4,12 @@
  */
 import React, { useEffect, useState } from 'react';
 import { fetchAdminFeedback, deleteAdminFeedback } from '../../api/AdminApi';
+import { useToast } from '../../components/common/Toast';
+import { useConfirm } from '../../components/common/ConfirmModal';
 
 function AdminFeedbackPage() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,13 +33,13 @@ function AdminFeedbackPage() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm('이 피드백을 삭제하시겠습니까?')) return;
+    if (!await confirm('이 피드백을 삭제하시겠습니까?')) return;
     try {
       await deleteAdminFeedback(id);
       load();
     } catch (e) {
       console.error(e);
-      alert('삭제 중 오류가 발생했습니다.');
+      toast('삭제 중 오류가 발생했습니다.', 'error');
     }
   };
 

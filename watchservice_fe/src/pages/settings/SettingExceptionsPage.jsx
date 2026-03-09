@@ -7,6 +7,8 @@
 import React, { useState } from 'react';
 import { useExceptions } from '../../hooks/UseExceptions';
 import { pickFolderPath } from '../../api/SettingApi';
+import { useToast } from '../../components/common/Toast';
+import { useConfirm } from '../../components/common/ConfirmModal';
 
 /**
  * 함수 이름 : SettingExceptionsPage
@@ -17,6 +19,8 @@ import { pickFolderPath } from '../../api/SettingApi';
  * 작성자 : 시스템
  */
 function SettingExceptionsPage() {
+  const toast = useToast();
+  const confirm = useConfirm();
   const { exceptions, loading, error, refresh, addException, removeException } = useExceptions();
 
   const [type, setType] = useState('PATH');
@@ -65,7 +69,7 @@ function SettingExceptionsPage() {
     e.preventDefault();
 
     if (!pattern.trim()) {
-      alert('예외로 등록할 경로나 패턴을 입력해주세요.');
+      toast('예외로 등록할 경로나 패턴을 입력해주세요.', 'warn');
       return;
     }
 
@@ -82,8 +86,8 @@ function SettingExceptionsPage() {
    * 작성 날짜 : 2025/12/17
    * 작성자 : 시스템
    */
-  const handleRemove = (id) => {
-    if (!window.confirm('이 예외 규칙을 삭제하시겠습니까?')) return;
+  const handleRemove = async (id) => {
+    if (!await confirm('이 예외 규칙을 삭제하시겠습니까?')) return;
     removeException(id);
   };
 

@@ -1,6 +1,7 @@
 package com.watchserviceagent.watchservice_agent.common.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -9,16 +10,20 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    @Value("${cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    private String[] allowedOrigins;
+
     public WebConfig() {
         log.info("[WebConfig] 활성화");
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 모든 엔드포인트에 대해
-                .allowedOrigins("http://localhost:3000", "http://localhost:5173") // 리액트 개발 서버
+        registry.addMapping("/**")
+                .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(true); // 쿠키/인증정보를 쓸 거면 true
+                .allowCredentials(true);
+        log.info("[WebConfig] CORS allowedOrigins={}", (Object) allowedOrigins);
     }
 }

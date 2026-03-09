@@ -17,7 +17,6 @@ import java.util.List;
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 @RestController
 @RequestMapping("/logs")
 @RequiredArgsConstructor

@@ -5,10 +5,12 @@ import com.watchserviceagent.watchservice_agent.ai.dto.AiPayload;
 import com.watchserviceagent.watchservice_agent.ai.dto.AiResponse;
 import com.watchserviceagent.watchservice_agent.ai.dto.FamilyPredictRequest;
 import com.watchserviceagent.watchservice_agent.ai.dto.FamilyPredictResponse;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -27,7 +29,7 @@ import java.util.Map;
 @Slf4j
 public class AiService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate;
     private final GeminiAdviceService geminiAdviceService;
 
     @Value("${ai.analyze.url:http://localhost:8000/api/analyze}")
@@ -35,6 +37,21 @@ public class AiService {
 
     @Value("${ai.family.url:http://localhost:8001/predict}")
     private String familyUrl;
+
+    @Value("${ai.connect-timeout-ms:5000}")
+    private int connectTimeoutMs;
+
+    @Value("${ai.read-timeout-ms:15000}")
+    private int readTimeoutMs;
+
+    @PostConstruct
+    private void initRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeoutMs);
+        factory.setReadTimeout(readTimeoutMs);
+        this.restTemplate = new RestTemplate(factory);
+        log.info("[AiService] RestTemplate 초기화 — connectTimeout={}ms, readTimeout={}ms", connectTimeoutMs, readTimeoutMs);
+    }
 
     /**
      * 함수 이름 : requestAnalysis

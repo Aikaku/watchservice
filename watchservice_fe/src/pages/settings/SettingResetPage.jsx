@@ -6,6 +6,7 @@
  */
 import React, { useState } from 'react';
 import { resetSettings } from '../../api/SettingApi';
+import { useConfirm } from '../../components/common/ConfirmModal';
 
 /**
  * 함수 이름 : SettingResetPage
@@ -16,11 +17,12 @@ import { resetSettings } from '../../api/SettingApi';
  * 작성자 : 시스템
  */
 function SettingResetPage() {
+  const confirm = useConfirm();
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState('');
 
   const handleReset = async () => {
-    const ok = window.confirm('설정을 기본값으로 초기화할까요?');
+    const ok = await confirm('설정을 기본값으로 초기화할까요?');
     if (!ok) return;
 
     setLoading(true);

@@ -6,6 +6,7 @@ import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 /**
  * 클래스 이름 : NotificationController
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"})
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
@@ -56,6 +56,17 @@ public class NotificationController {
     public NotificationResponse getNotification(@PathVariable("id") long id, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         return notificationService.getNotificationById(ownerKey, id);
+    }
+
+    /**
+     * 함수 이름 : getStats
+     * 기능 : 현재 사용자의 ai_label별 알림 카운트 통계를 반환한다.
+     * 반환값 : Map - {counter: {total, DANGER, WARNING, SAFE, UNKNOWN}}
+     */
+    @GetMapping("/stats")
+    public Map<String, Object> getStats(HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return notificationService.getStats(ownerKey);
     }
 }
 

@@ -5,6 +5,7 @@
  * 작성자 : 시스템
  */
 import React from 'react';
+import { useToast } from '../../components/common/Toast';
 
 /**
  * 함수 이름 : SettingUpdatePage
@@ -15,10 +16,11 @@ import React from 'react';
  * 작성자 : 시스템
  */
 function SettingUpdatePage() {
+  const toast = useToast();
   const currentVersion = '0.1.0-dev';
 
   const handleCheckUpdate = () => {
-    alert('업데이트 서버와 통신해서 최신 버전을 확인하는 기능을 나중에 구현할 수 있습니다.');
+    toast('업데이트 서버와 통신해서 최신 버전을 확인하는 기능을 나중에 구현할 수 있습니다.', 'info');
   };
 
   return (

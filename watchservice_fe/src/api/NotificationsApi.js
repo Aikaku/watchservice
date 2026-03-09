@@ -110,17 +110,9 @@ export function fetchAlertDetail(id) {
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-export async function fetchAlertStats({
-  range = 'daily',
-  from = '',
-  to = '',
-} = {}) {
-  // TODO: 향후 통계 API 구현 시 사용
+export async function fetchAlertStats() {
+  const res = await get('/notifications/stats');
   return {
-    range: range || 'daily',
-    from,
-    to,
-    series: [],
-    counter: { total: 0, DANGER: 0, WARNING: 0, SAFE: 0, UNKNOWN: 0 },
+    counter: res?.counter || { total: 0, DANGER: 0, WARNING: 0, SAFE: 0, UNKNOWN: 0 },
   };
 }

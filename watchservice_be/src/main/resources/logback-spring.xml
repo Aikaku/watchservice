@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- 콘솔 출력 (개발 환경) -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 파일 롤링 출력 (운영 환경) -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/watchservice.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 일별 롤링, 크기 초과 시 번호 추가 -->
+            <fileNamePattern>logs/watchservice.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <!-- 파일 하나당 최대 크기 -->
+            <maxFileSize>50MB</maxFileSize>
+            <!-- 보관 일수 -->
+            <maxHistory>30</maxHistory>
+            <!-- 전체 로그 최대 용량 -->
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 애플리케이션 로거 -->
+    <logger name="com.watchserviceagent" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <!-- Spring/Hibernate SQL 로그 (개발 시에만 DEBUG) -->
+    <springProfile name="dev">
+        <logger name="org.springframework.jdbc.core.JdbcTemplate" level="DEBUG"/>
+        <logger name="org.springframework.jdbc.datasource" level="DEBUG"/>
+    </springProfile>
+
+    <!-- 루트 로거 -->
+    <root level="WARN">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>

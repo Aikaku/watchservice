@@ -6,6 +6,7 @@
  */
 import React, { useState } from 'react';
 import { sendFeedback } from '../../api/SettingApi';
+import { useToast } from '../../components/common/Toast';
 
 /**
  * 함수 이름 : SettingFeedbackPage
@@ -16,6 +17,7 @@ import { sendFeedback } from '../../api/SettingApi';
  * 작성자 : 시스템
  */
 function SettingFeedbackPage() {
+  const toast = useToast();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [content, setContent] = useState('');
@@ -26,7 +28,7 @@ function SettingFeedbackPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) {
-      alert('내용을 입력해주세요.');
+      toast('내용을 입력해주세요.', 'warn');
       return;
     }
 
