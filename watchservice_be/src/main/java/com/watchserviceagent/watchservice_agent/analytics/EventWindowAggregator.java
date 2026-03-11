@@ -303,6 +303,10 @@ public class EventWindowAggregator {
         Set<String> suspiciousExtFileSet = new HashSet<>();
         Map<String, Integer> extAfterFreq = new HashMap<>();
 
+        // 시퀀스 탐지용: DELETE된 경로, 엔트로피 증가했지만 크기/확장자 변화 없는 MODIFY 경로
+        Set<String> deletedPathSet = new HashSet<>();
+        Set<String> modifyHighEntropyNoChangePaths = new HashSet<>();
+
         double entropyDiffSum = 0.0;
         double sizeDiffSum = 0.0;
         int entropyDiffCount = 0;
@@ -367,6 +371,24 @@ public class EventWindowAggregator {
 
             if ("DELETE".equals(eventType)) {
                 deleteCount++;
+                if (path != null) {
+                    deletedPathSet.add(path);
+                    // 삭제된 파일은 접근이 선행됨 → touch session에 포함
+                    long ts = (r.getEventTime() != null)
+                            ? r.getEventTime().toEpochMilli()
+                            : System.currentTimeMillis();
+                    String key = safe(ownerKey) + "|" + safe(path);
+                    Long lastTouch = sessionState.get(key);
+                    if (lastTouch == null || ts - lastTouch > touchSessionTimeoutMs) {
+                        touchCount++;
+                        sessionState.put(key, ts);
+                    }
+                }
+            }
+
+            // CREATE with significant content counts as write (암호화된 복사본 생성 탐지)
+            if ("CREATE".equals(eventType) && sizeAfter != null && sizeAfter >= encryptMinSizeBytes) {
+                writeCount++;
             }
 
             // ---------------------------------------
@@ -406,6 +428,18 @@ public class EventWindowAggregator {
                     && isSuspiciousExt(extAfter));
 
             if (bigEnough && ((entropyUp && (sizeChanged || extChanged)) || noBeforeButHighEntropy)) {
+                encryptLikeCount++;
+            } else if ("MODIFY".equals(eventType) && bigEnough && entropyUp && !(sizeChanged || extChanged) && path != null) {
+                // 스트림 암호 in-place: 엔트로피 증가했지만 크기·확장자 변화 없음
+                // → 같은 윈도우 내 DELETE와 시퀀스 매칭으로 판정 (아래 후처리)
+                modifyHighEntropyNoChangePaths.add(path);
+            }
+        }
+
+        // 시퀀스 탐지: 스트림 암호로 in-place 암호화 후 원본 삭제 패턴
+        // (MODIFY: 엔트로피↑, 크기·확장자 동일) → (DELETE: 같은 경로)
+        for (String p : modifyHighEntropyNoChangePaths) {
+            if (deletedPathSet.contains(p)) {
                 encryptLikeCount++;
             }
         }

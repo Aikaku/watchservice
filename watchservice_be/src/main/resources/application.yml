@@ -88,5 +88,5 @@ watchservice:
     random-ext:
       min-count: 2
       min-length: 4
-      whitelist: "txt,log,doc,docx,xls,xlsx,pdf,png,jpg,jpeg,gif,zip,rar,7z"
+      whitelist: "txt,log,doc,docx,xls,xlsx,pdf,png,jpg,jpeg,gif,zip,rar,7z,html,htm,json,yaml,yml,java,pptx,ppt,csv,flac,webm,webp,tiff,bmp,conf,toml,sqlite,mpeg,opus"
       uniform-ext-min-count: 3
