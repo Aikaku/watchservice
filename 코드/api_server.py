@@ -43,9 +43,12 @@ app = FastAPI(
 )
 
 # CORS 설정 (백엔드에서 호출 가능하도록)
+_cors_origins_raw = os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:8080")
+_cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -283,7 +286,7 @@ def _build_row_from_features(features: Dict[str, Any]) -> Tuple[Dict[str, Any], 
     """
     matched = [c for c in feature_list if c in features]
     missing = [c for c in feature_list if c not in features]
-    row = {c: features.get(c, -1) for c in feature_list}  # 누락은 -1로 채움
+    row = {c: features.get(c, 0) for c in feature_list}  # 누락은 0으로 채움 (카운트 피처의 자연스러운 결측값)
     return row, matched, missing
 
 
@@ -414,7 +417,7 @@ def predict(req: PredictRequest):
     row, matched, missing = _build_row_from_features(_normalize_features(features))
     msg = None
     if missing:
-        msg = f"Missing {len(missing)} features filled with -1."
+        msg = f"Missing {len(missing)} features filled with 0."
 
     return PredictResponse(topk=items, message=msg)
 
@@ -471,7 +474,7 @@ def api_analyze(payload: Dict[str, Any] = Body(...)):
         row, matched, missing = _build_row_from_features(features)
         msg_parts = []
         if missing:
-            msg_parts.append(f"Missing {len(missing)} features filled with -1.")
+            msg_parts.append(f"Missing {len(missing)} features filled with 0.")
         if matched:
             msg_parts.append(f"Matched {len(matched)} features.")
         message = " ".join(msg_parts) if msg_parts else None
