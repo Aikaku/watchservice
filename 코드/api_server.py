@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 import yaml
-from fastapi import Body, FastAPI
+from fastapi import Body, FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -342,9 +342,9 @@ def _predict_topk(features: Dict[str, Any], topk: int = 5) -> List[PredictRespon
     # 피처 정규화
     features = _normalize_features(features)
 
-    # 모델 입력 형식으로 변환
+    # 모델 입력 형식으로 변환 (누락 피처는 _build_row_from_features에서 이미 -1로 채워짐)
     row, matched, missing = _build_row_from_features(features)
-    X = pd.DataFrame([row]).fillna(-1)
+    X = pd.DataFrame([row])
 
     # 확률 예측
     proba = _predict_proba_any(X)
@@ -367,10 +367,12 @@ def _predict_topk(features: Dict[str, Any], topk: int = 5) -> List[PredictRespon
 # API Endpoints
 # ============================
 @app.get("/health")
-def health():
-    """헬스체크"""
+def health(response: Response):
+    """헬스체크 — 모델 미로드 시 503 반환"""
+    if model is None:
+        response.status_code = 503
     return {
-        "ok": True,
+        "ok": model is not None,
         "model_loaded": model is not None,
         "label_encoder_loaded": label_encoder is not None,
         "feature_count": len(feature_list),
@@ -437,24 +439,28 @@ def api_analyze(payload: Dict[str, Any] = Body(...)):
                 message="예측 결과가 없습니다.",
             )
 
-        # top-1 결과 추출
+        # top-1 결과 추출 (detail 문자열용)
         top1 = items[0]
         top_family = top1.family
         top_prob = top1.prob
 
         # 라벨 결정
-        # - 이진 분류(benign/ransomware)일 때:
-        #   top_family가 benign이면 SAFE, 아니면 WARNING/DANGER
+        # 다중 클래스에서도 정확하도록 benign 이외 모든 클래스 확률을 합산해 위험도(score)를 계산한다.
+        # 이진 분류(benign/ransomware)에서는 기존 방식과 동일한 결과를 낸다.
         if not top_family:
             label = "UNKNOWN"
             score = None
-        elif "benign" in top_family.lower():
-            label = "SAFE"
-            # benign 확률(top_prob) 기준이면 위험도는 1 - benign_prob
-            score = float(max(0.0, min(1.0, 1.0 - top_prob)))
         else:
-            score = float(max(0.0, min(1.0, top_prob)))
-            label = "DANGER" if score >= 0.70 else "WARNING"
+            ransomware_score = float(sum(
+                item.prob for item in items if item.family.lower() != "benign"
+            ))
+            score = max(0.0, min(1.0, ransomware_score))
+            if score >= 0.70:
+                label = "DANGER"
+            elif score >= 0.50:
+                label = "WARNING"
+            else:
+                label = "SAFE"
 
         # detail 문자열 생성 (백엔드가 파싱하는 형식)
         detail_parts = [f"top_family={top_family}"]
