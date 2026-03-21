@@ -60,10 +60,10 @@
 | ✅ | Gemini API 타임아웃 10000ms, thinkingBudget=0 설정 | 2026-03-08 |
 | ⬜ | **`requirements.txt` 없음** — 필요 라이브러리: `fastapi`, `uvicorn`, `xgboost`, `lightgbm`, `pandas`, `numpy`, `pyyaml` | — |
 | ⬜ | **`configs/config.yaml` 없음** — `api_server.py`가 참조하나 파일 미존재, 운영 환경 아티팩트 경로 관리 불가 | — |
-| ⬜ | **CORS `allow_origins=["*"]`** — `api_server.py:47` 모든 출처 허용, Spring Boot 서버 주소만 허용하도록 제한 필요 | — |
-| ⬜ | **다중 클래스 score 계산 오류** — benign top-1이어도 랜섬웨어 총합 확률이 높으면 SAFE 오판, 모든 랜섬웨어 클래스 확률 합산으로 score 계산 필요 | — |
+| ✅ | CORS `allow_origins=["*"]` → `CORS_ALLOWED_ORIGINS` 환경변수 기반으로 수정 | 2026-03-21 |
+| ✅ | 다중 클래스 score 계산 오류 수정 — 랜섬웨어 총합 확률 합산 방식으로 변경 | 2026-03-21 |
+| ✅ | benign 판정 로직 수정 — score 임계값 기반(≥0.70 DANGER / ≥0.50 WARNING)으로 변경 | 2026-03-21 |
 | ⬜ | **누락 피처 -1 채움** — `features.get(c, -1)` 학습 시 결측 처리 방식과 불일치 가능 | — |
-| ⬜ | **benign 판정 문자열 검사** — `"benign" in top_family.lower()` 클래스명 의존 → 인덱스/명시적 비교로 교체 | — |
 | ⬜ | **모델 로드 실패 시 서버 조용히 기동** — 모델 없이 기동 시 항상 `UNKNOWN` 반환, 명시적 실패 처리 또는 `/health` 503 반환 필요 | — |
 
 ---
