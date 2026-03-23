@@ -86,7 +86,7 @@ npm start
 
 ```env
 # 관리자 계정
-ADMIN_USERNAME=admin
+ADMIN_USERNAME=your-admin-username
 ADMIN_PASSWORD=$2a$10$...   # BCrypt 해시 권장 (평문도 가능)
 
 # Gemini API (선택 — 없으면 대응 가이드 생략)
@@ -153,7 +153,7 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 
 ## 관리자 페이지
 
-`/admin/login` 에서 로그인 후 사용 가능하다.
+관리자 전용 경로에서 로그인 후 사용 가능하다.
 
 | 메뉴 | 기능 |
 |------|------|
@@ -213,7 +213,6 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 | `GET` | `/api/logs` | 이벤트 로그 조회 |
 | `GET` | `/api/settings` | 설정 조회 |
 | `POST` | `/api/feedback` | 피드백 제출 |
-| `POST` | `/api/admin/login` | 관리자 로그인 |
 | `GET` | `/actuator/health` | 헬스체크 |
 
 ### AI 서버 (`:8001`)
