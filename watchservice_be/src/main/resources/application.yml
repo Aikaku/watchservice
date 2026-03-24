@@ -45,9 +45,9 @@ management:
 
 ai:
   analyze:
-    url: http://localhost:8001/api/analyze
+    url: ${AI_ANALYZE_URL:http://localhost:8001/api/analyze}
   family:
-    url: http://localhost:8001/predict
+    url: ${AI_FAMILY_URL:http://localhost:8001/predict}
   connect-timeout-ms: ${AI_CONNECT_TIMEOUT_MS:5000}
   read-timeout-ms: ${AI_READ_TIMEOUT_MS:15000}
 

@@ -5,7 +5,9 @@
  * 작성자 : 시스템
  */
 
-const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+// Electron 배포: Spring Boot가 React 정적 파일을 함께 서빙하므로 상대경로 사용
+// 개발 환경(포트 3000)에서는 REACT_APP_API_BASE_URL=http://localhost:8080 으로 설정
+const BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
 /**
  * 함수 이름 : request

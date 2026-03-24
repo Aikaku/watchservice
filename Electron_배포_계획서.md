@@ -127,16 +127,10 @@
 
 ---
 
-### Phase 6 (선택) — 코드 서명
+### Phase 6 — 코드 서명 ❌ 제외
 
-**목표**: 운영체제의 보안 경고 없이 앱 설치 가능하게 함
-
-**작업**:
-- Windows: EV 코드 서명 인증서 구매 (SmartScreen 경고 제거)
-- macOS: Apple Developer Program 등록 ($99/년), 공증(Notarization) 처리
-
-> 코드 서명 없이도 앱은 동작하지만 설치 시 "확인되지 않은 개발자" 경고가 표시됨.
-> 학교 프로젝트·시연 목적이라면 Phase 6은 생략 가능.
+> 유료 (Windows EV 인증서 $200~$500/년, macOS Apple Developer $99/년) — 비용 문제로 제외.
+> 설치 시 OS 보안 경고가 표시되지만 "그래도 열기"로 정상 설치 가능.
 
 ---
 
@@ -164,7 +158,7 @@ Phase 2  Electron Shell 구성
 Phase 3  AI 서버 클라우드 배포
 Phase 4  JRE 번들링 + 인스톨러 빌드
 Phase 5  다운로드 사이트 구성
-Phase 6  코드 서명 (선택)
+Phase 6  코드 서명 ❌ 제외 (유료)
 ```
 
 ---

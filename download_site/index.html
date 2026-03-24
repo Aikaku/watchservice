@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WatchService Agent — 다운로드</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --border: #334155;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --blue: #3b82f6;
+      --blue-dark: #2563eb;
+      --green: #22c55e;
+      --red: #ef4444;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 24px 80px;
+    }
+
+    /* ── 헤더 ── */
+    .header { text-align: center; margin-bottom: 56px; }
+    .badge {
+      display: inline-block;
+      background: #1d4ed8;
+      color: #bfdbfe;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+    .header h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .header h1 span { color: var(--blue); }
+    .header p {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── 다운로드 카드 영역 ── */
+    .cards {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 48px;
+      width: 100%;
+      max-width: 780px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      flex: 1;
+      min-width: 280px;
+      max-width: 360px;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .card.recommended {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue);
+    }
+    .recommended-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--blue);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 14px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .card-icon { font-size: 36px; margin-bottom: 16px; }
+    .card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .card .version {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .card .specs {
+      list-style: none;
+      margin-bottom: 28px;
+    }
+    .card .specs li {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card .specs li::before { content: "✓"; color: var(--green); font-weight: 700; }
+
+    .btn-download {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 20px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    .btn-download:hover { background: var(--blue-dark); }
+    .btn-download.disabled {
+      background: var(--border);
+      color: var(--muted);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .file-size {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 10px;
+    }
+
+    /* ── 버전 정보 ── */
+    .version-info {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 56px;
+    }
+    .version-info a { color: var(--blue); text-decoration: none; }
+    .version-info a:hover { text-decoration: underline; }
+
+    /* ── 설치 단계 ── */
+    .steps {
+      width: 100%;
+      max-width: 640px;
+      margin-bottom: 56px;
+    }
+    .steps h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 12px;
+    }
+    .step-list { display: flex; flex-direction: column; gap: 12px; }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: var(--blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-body { flex: 1; }
+    .step-body strong { font-size: 14px; display: block; margin-bottom: 4px; }
+    .step-body span { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+    /* ── 주의사항 ── */
+    .notice {
+      width: 100%;
+      max-width: 640px;
+      background: #1c1917;
+      border: 1px solid #44403c;
+      border-left: 3px solid #f59e0b;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 13px;
+      color: #d6d3d1;
+      line-height: 1.7;
+    }
+    .notice strong { color: #fbbf24; }
+
+    /* ── 푸터 ── */
+    footer {
+      margin-top: 64px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    footer a { color: var(--blue); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="badge">무료 다운로드</div>
+    <h1>WatchService <span>Agent</span></h1>
+    <p>랜섬웨어 실시간 탐지 · AI 행동 분석 · 로컬 설치형<br>Java 별도 설치 불필요, 설치 즉시 사용 가능</p>
+  </div>
+
+  <div class="cards">
+    <!-- Windows -->
+    <div class="card" id="card-win">
+      <div class="card-icon">🪟</div>
+      <h2>Windows</h2>
+      <div class="version">10 / 11 &nbsp;·&nbsp; 64bit</div>
+      <ul class="specs">
+        <li>MSI 인스톨러 (Java 포함)</li>
+        <li>시스템 트레이 백그라운드 실행</li>
+        <li>시작 프로그램 자동 등록</li>
+        <li>시작 메뉴 · 바탕화면 바로가기</li>
+      </ul>
+      <!-- GITHUB_REPO 를 실제 레포 경로로 교체 (예: username/watchservice) -->
+      <a id="btn-win"
+         class="btn-download"
+         href="https://github.com/GITHUB_REPO/releases/latest/download/WatchService-Agent-Setup.msi">
+        ⬇ Windows(.msi) 다운로드
+      </a>
+      <div class="file-size">약 155 MB</div>
+    </div>
+
+    <!-- macOS -->
+    <div class="card" id="card-mac">
+      <div class="card-icon">🍎</div>
+      <h2>macOS</h2>
+      <div class="version">11 Big Sur 이상 &nbsp;·&nbsp; Intel / Apple Silicon</div>
+      <ul class="specs">
+        <li>DMG 디스크 이미지 (Java 포함)</li>
+        <li>메뉴바 트레이 백그라운드 실행</li>
+        <li>로그인 항목 자동 등록</li>
+        <li>Apple Silicon(M1/M2/M3) 네이티브 지원</li>
+      </ul>
+      <a id="btn-mac"
+         class="btn-download"
+         href="https://github.com/GITHUB_REPO/releases/latest/download/WatchService-Agent.dmg">
+        ⬇ macOS(.dmg) 다운로드
+      </a>
+      <div class="file-size">약 155 MB</div>
+    </div>
+  </div>
+
+  <div class="version-info">
+    최신 버전 &nbsp;|&nbsp;
+    <a href="https://github.com/GITHUB_REPO/releases" id="release-link">모든 릴리스 보기</a>
+    &nbsp;|&nbsp;
+    <a href="INSTALL_GUIDE.md">설치 가이드</a>
+  </div>
+
+  <!-- 설치 단계 -->
+  <div class="steps">
+    <h3>설치 방법</h3>
+    <div class="step-list">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <strong>인스톨러 다운로드</strong>
+          <span>운영체제에 맞는 버튼을 클릭해 설치 파일을 다운로드합니다.</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <strong>설치 실행</strong>
+          <span>Windows: .msi 파일 실행 → 안내에 따라 설치<br>
+                macOS: .dmg 파일 열기 → Applications 폴더로 드래그</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <strong>앱 실행</strong>
+          <span>시작 메뉴(Windows) 또는 응용 프로그램(macOS)에서 WatchService Agent를 실행합니다.</span>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <strong>감시 폴더 설정</strong>
+          <span>대시보드 → 설정 → 감시 폴더에서 보호할 폴더를 추가하면 실시간 탐지가 시작됩니다.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notice">
+    <strong>⚠ 주의</strong><br>
+    macOS에서 "확인되지 않은 개발자" 경고가 표시될 수 있습니다.<br>
+    시스템 설정 → 개인 정보 보호 및 보안 → "그래도 열기"를 클릭하면 정상 실행됩니다.
+  </div>
+
+  <footer>
+    <a href="https://github.com/GITHUB_REPO">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://github.com/GITHUB_REPO/issues">문의 / 버그 신고</a>
+    <br><br>
+    © 2026 WatchService Agent. 무료 소프트웨어.
+  </footer>
+
+  <script>
+    // OS 자동 감지 → 해당 카드 강조
+    const ua = navigator.userAgent.toLowerCase();
+    const isMac = /mac/.test(ua) && !/iphone|ipad/.test(ua);
+    const isWin = /win/.test(ua);
+
+    if (isMac) {
+      document.getElementById('card-mac').classList.add('recommended');
+      document.getElementById('card-mac').insertAdjacentHTML(
+        'afterbegin', '<div class="recommended-badge">현재 OS에 맞는 버전</div>'
+      );
+    } else if (isWin) {
+      document.getElementById('card-win').classList.add('recommended');
+      document.getElementById('card-win').insertAdjacentHTML(
+        'afterbegin', '<div class="recommended-badge">현재 OS에 맞는 버전</div>'
+      );
+    }
+
+    // GitHub API로 최신 버전 태그 동적 표시 (선택사항)
+    // 실제 레포 경로 설정 필요
+    const REPO = 'GITHUB_REPO';
+    if (!REPO.includes('GITHUB_REPO')) {
+      fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.tag_name) {
+            document.querySelectorAll('.version-info').forEach(el => {
+              el.textContent = `최신 버전: ${data.tag_name}  |  `;
+            });
+          }
+        })
+        .catch(() => {});
+    }
+  </script>
+</body>
+</html>

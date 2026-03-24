@@ -1,0 +1,21 @@
+# ── 데이터베이스 ──────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ── Electron 빌드 산출물 ──────────────────────
+watchservice_electron/jre/
+watchservice_electron/dist/
+watchservice_electron/node_modules/
+
+# ── OS / 에디터 ───────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+*.iml
+
+# ── 환경변수 ──────────────────────────────────
+.env
+*.env
+.env.local
+.env.production
