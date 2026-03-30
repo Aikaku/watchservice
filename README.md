@@ -8,17 +8,19 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  사용자 브라우저                                              │
-│  watchservice_fe  (React, port 3000)                        │
+│  Electron 데스크탑 앱 (watchservice_electron)                │
+│  - Spring Boot JAR를 내부에서 자동 실행                      │
+│  - 시스템 트레이 상주                                        │
 └────────────────────────┬────────────────────────────────────┘
-                         │ HTTP API
+                         │ 내장 브라우저 (localhost:8080)
 ┌────────────────────────▼────────────────────────────────────┐
 │  watchservice_be  (Spring Boot, port 8080)                  │
+│  - React 정적 파일 서빙 (watchservice_fe 빌드 결과)          │
 │  - NIO WatchService로 폴더 재귀 감시                         │
 │  - 3초 윈도우 단위 피처 집계                                  │
 │  - SQLite 로그 저장 (log.db)                                 │
 └────────────────────────┬────────────────────────────────────┘
-                         │ HTTP (localhost:8001)
+                         │ HTTP (기본: localhost:8001)
 ┌────────────────────────▼────────────────────────────────────┐
 │  AI 서버  (FastAPI + XGBoost, port 8001)                    │
 │  - 9개 피처 → 랜섬웨어 판정 (SAFE / WARNING / DANGER)        │
@@ -28,6 +30,9 @@
               Gemini LLM API (선택)
               대응 가이드 생성
 ```
+
+> **개발 환경**: `npm start`(포트 3000) + `./gradlew bootRun`(포트 8080) 을 분리 실행 가능.
+> **배포 환경**: `build.sh --electron`으로 Electron `.dmg` / `.msi` 인스톨러 생성.
 
 ---
 
@@ -45,38 +50,64 @@
 
 ## 빠른 시작
 
-### 1. AI 서버 실행
+### 방법 A — 데스크탑 앱 (인스톨러)
+
+[다운로드 페이지](download_site/INSTALL_GUIDE.md)에서 `.dmg` (macOS) 또는 `.msi` (Windows) 설치 후 실행.
+Java 설치 불필요 — JRE가 앱 안에 번들되어 있다.
+
+> AI 서버는 별도 배포 필요 (아래 [AI 서버 실행](#1-ai-서버-실행) 참고).
+
+---
+
+### 방법 B — 소스에서 직접 실행 (개발)
+
+#### 1. AI 서버 실행
 
 ```bash
 cd 코드/
-pip install fastapi uvicorn xgboost lightgbm pandas numpy pyyaml
+pip install -r ../ai_server_deploy/requirements.txt
 python api_server.py
 # → http://localhost:8001
 ```
 
 아티팩트 파일(`model_xgb.json`, `features.json`, `classes.json`)은 `코드/artifacts/` 폴더에 위치해야 한다.
 
-### 2. 백엔드 실행
+#### 2. 백엔드 실행
 
 ```bash
 cd watchservice_be/
 
 # .env 파일 생성 (최초 1회)
-cp .env.example .env   # 없으면 아래 환경변수 직접 설정
+cp .env.example .env   # 없으면 아래 환경변수를 직접 설정
 
-# 실행
 ./gradlew bootRun
 # → http://localhost:8080
 ```
 
-### 3. 프론트엔드 실행
+#### 3. 프론트엔드 실행 (개발 서버)
 
 ```bash
 cd watchservice_fe/
 npm install
 npm start
-# → http://localhost:3000
+# → http://localhost:3000  (개발 시에만 분리 실행)
 ```
+
+---
+
+### 방법 C — 통합 빌드 (Electron 인스톨러 생성)
+
+```bash
+# macOS — .dmg 생성
+./build.sh --electron
+
+# Windows — .msi 생성
+build.bat --electron
+```
+
+빌드 결과: `watchservice_electron/dist/` 에 인스톨러 파일 생성.
+
+> `--electron` 없이 실행하면 JAR 파일까지만 빌드하고 종료된다.
 
 ---
 
@@ -92,6 +123,10 @@ ADMIN_PASSWORD=$2a$10$...   # BCrypt 해시 권장 (평문도 가능)
 # Gemini API (선택 — 없으면 대응 가이드 생략)
 GEMINI_API_KEY=AIza...
 
+# AI 서버 주소 (기본값: localhost:8001)
+AI_ANALYZE_URL=http://localhost:8001/api/analyze
+AI_FAMILY_URL=http://localhost:8001/predict
+
 # AI 서버 타임아웃 (선택)
 AI_CONNECT_TIMEOUT_MS=5000
 AI_READ_TIMEOUT_MS=15000
@@ -100,11 +135,8 @@ AI_READ_TIMEOUT_MS=15000
 CORS_ALLOWED_ORIGINS=http://localhost:3000
 ```
 
-**BCrypt 해시 생성 방법:**
+**BCrypt 해시 생성:**
 ```bash
-# Java
-new BCryptPasswordEncoder().encode("yourPassword")
-
 # CLI (htpasswd 사용)
 htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 ```
@@ -153,7 +185,8 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 
 ## 관리자 페이지
 
-관리자 전용 경로에서 로그인 후 사용 가능하다.
+`/admin/login` 에서 로그인 후 사용 가능.
+기본 계정: `admin` / `123456789` (운영 전 반드시 변경).
 
 | 메뉴 | 기능 |
 |------|------|
@@ -170,7 +203,7 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 
 ```
 통합/
-├── watchservice_be/          # Spring Boot 백엔드
+├── watchservice_be/          # Spring Boot 백엔드 (에이전트)
 │   ├── src/main/java/.../
 │   │   ├── watcher/          # NIO WatchService 파일 감시
 │   │   ├── collector/        # 파일 분석 (엔트로피·크기·확장자)
@@ -181,7 +214,7 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 │   │   ├── settings/         # 감시 폴더·예외 규칙 설정
 │   │   └── admin/            # 관리자 인증·관리 기능
 │   └── src/main/resources/
-│       ├── application.yml   # 서버 설정
+│       ├── application.yml
 │       └── logback-spring.xml
 ├── watchservice_fe/          # React 프론트엔드
 │   └── src/
@@ -189,12 +222,32 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 │       ├── components/       # 공통 컴포넌트 (Toast, Modal 등)
 │       ├── layout/           # MainLayout, NavSidebar
 │       └── pages/            # 화면별 컴포넌트
-└── 코드/                     # AI 서버 (FastAPI + XGBoost)
-    ├── api_server.py         # FastAPI 엔드포인트
-    └── artifacts/            # 학습된 모델·피처 목록
-        ├── model_xgb.json
-        ├── features.json
-        └── classes.json
+├── watchservice_electron/    # Electron 데스크탑 앱 래퍼
+│   ├── main.js               # Spring Boot 프로세스 관리·트레이
+│   ├── preload.js
+│   ├── package.json          # electron-builder 설정 (.dmg/.msi)
+│   └── assets/               # 아이콘·로딩 화면·오류 화면
+├── 코드/                     # AI 서버 (FastAPI + XGBoost)
+│   ├── api_server.py         # FastAPI 엔드포인트
+│   └── artifacts/            # 학습된 모델·피처 목록
+│       ├── model_xgb.json
+│       ├── features.json
+│       └── classes.json
+├── ai_server_deploy/         # AI 서버 클라우드 배포 패키지
+│   ├── requirements.txt
+│   ├── Procfile              # Railway/Render 시작 명령
+│   ├── railway.toml
+│   └── README_DEPLOY.md      # 배포 절차 가이드
+├── download_site/            # GitHub Pages 다운로드 페이지
+│   ├── index.html
+│   └── INSTALL_GUIDE.md
+├── .github/workflows/
+│   ├── release.yml           # 태그 푸시 → macOS/Windows 자동 빌드 + 릴리스
+│   └── pages.yml             # download_site → GitHub Pages 자동 배포
+├── build.sh                  # 통합 빌드 스크립트 (macOS/Linux)
+├── build.bat                 # 통합 빌드 스크립트 (Windows)
+├── jre_build.sh              # jlink 최소 JRE 생성 (macOS/Linux)
+└── jre_build.bat             # jlink 최소 JRE 생성 (Windows)
 ```
 
 ---
@@ -244,6 +297,7 @@ SQLite (`log.db`) — 프로젝트 루트에 자동 생성.
 | 문서 | 내용 |
 |------|------|
 | [FEATURE_CHANGES.md](FEATURE_CHANGES.md) | AI 피처 계산 방식 변경 이력 |
-| [상용화_TODO.md](상용화_TODO.md) | 상용화 전 필요 작업 목록 |
-| [진행상황표.md](진행상황표.md) | 주별 진행 상황 |
+| [ai_server_deploy/README_DEPLOY.md](ai_server_deploy/README_DEPLOY.md) | AI 서버 Railway/Render 배포 절차 |
+| [download_site/INSTALL_GUIDE.md](download_site/INSTALL_GUIDE.md) | Windows/macOS 설치 가이드 |
+| [진행상황표.md](진행상황표.md) | 주별 진행 상황 (보안·백엔드·프론트·AI·배포 포함) |
 | [CLAUDE.md](CLAUDE.md) | 개발 가이드 (Claude Code용) |
