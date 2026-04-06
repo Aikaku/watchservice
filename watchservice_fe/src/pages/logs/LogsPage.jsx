@@ -5,6 +5,7 @@
  * 작성자 : 시스템
  */
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLogs } from '../../hooks/UseLogs';
 import { useToast } from '../../components/common/Toast';
 import { useConfirm } from '../../components/common/ConfirmModal';
@@ -53,6 +54,7 @@ function downloadJson(filename, obj) {
  * 작성자 : 시스템
  */
 function LogsPage() {
+  const navigate = useNavigate();
   const toast = useToast();
   const confirm = useConfirm();
   const {
@@ -261,6 +263,13 @@ function LogsPage() {
             <option value={100}>100</option>
           </select>
         </label>
+
+        <button className="btn" onClick={() => navigate('/logs/top-files')}>
+          자주 변경 파일 TOP 10
+        </button>
+        <button className="btn" onClick={() => navigate('/logs/extension-stats')}>
+          확장자 분포
+        </button>
 
         <button className="btn" onClick={() => handleExport('CSV')}>
           CSV 내보내기

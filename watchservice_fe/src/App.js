@@ -16,6 +16,8 @@ import NotificationDetailPage from './pages/notifications/NotificationDetailPage
 import NotificationStatsPage from './pages/notifications/NotificationStatsPage';
 
 import LogsPage from './pages/logs/LogsPage';
+import TopFilesPage from './pages/logs/TopFilesPage';
+import ExtensionStatsPage from './pages/logs/ExtensionStatsPage';
 
 import SettingHomePage from './pages/settings/SettingHomePage';
 import SettingFoldersPage from './pages/settings/SettingFoldersPage';
@@ -62,6 +64,8 @@ function App() {
 
           {/* 로그 */}
           <Route path="/logs" element={<LogsPage />} />
+          <Route path="/logs/top-files" element={<TopFilesPage />} />
+          <Route path="/logs/extension-stats" element={<ExtensionStatsPage />} />
 
           {/* 사용자 공지사항 */}
           <Route path="/notice" element={<UserNoticePage />} />

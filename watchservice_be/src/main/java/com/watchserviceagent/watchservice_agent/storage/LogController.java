@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 클래스 이름 : LogController
@@ -134,5 +135,21 @@ public class LogController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
                 .body(csv);
+    }
+
+    @GetMapping("/top-files")
+    public List<Map<String, Object>> getTopFiles(
+            @RequestParam(name = "limit", defaultValue = "10") int limit,
+            HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return logService.getTopFiles(ownerKey, limit);
+    }
+
+    @GetMapping("/extension-stats")
+    public List<Map<String, Object>> getExtensionStats(
+            @RequestParam(name = "limit", defaultValue = "20") int limit,
+            HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return logService.getExtensionStats(ownerKey, limit);
     }
 }

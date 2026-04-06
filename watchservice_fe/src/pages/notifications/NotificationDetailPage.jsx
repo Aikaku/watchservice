@@ -6,7 +6,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { fetchAlertDetail } from '../../api/NotificationsApi';
+import { fetchAlertDetail, reportFalsePositive } from '../../api/NotificationsApi';
 
 /**
  * 함수 이름 : NotificationDetailPage
@@ -26,6 +26,9 @@ function NotificationDetailPage() {
   const [notification, setNotification] = useState(stateItem || null);
   const [loading, setLoading] = useState(!stateItem);
   const [error, setError] = useState(null);
+  const [fpDone, setFpDone] = useState(false);
+  const [fpLoading, setFpLoading] = useState(false);
+  const [fpError, setFpError] = useState(null);
 
   useEffect(() => {
     if (stateItem) return;
@@ -111,9 +114,31 @@ function NotificationDetailPage() {
             )}
           </div>
 
-          <button className="btn" onClick={() => navigate('/notifications')}>
-            알림 목록으로 돌아가기
-          </button>
+          <div style={{ marginTop: 24, display: 'flex', gap: 12, alignItems: 'center' }}>
+            <button className="btn" onClick={() => navigate('/notifications')}>
+              알림 목록으로 돌아가기
+            </button>
+            <button
+              className="btn"
+              style={{ background: fpDone || notification.falsePositive ? '#374151' : '#b91c1c' }}
+              disabled={fpDone || fpLoading || notification.falsePositive}
+              onClick={async () => {
+                setFpLoading(true);
+                setFpError(null);
+                try {
+                  await reportFalsePositive(id);
+                  setFpDone(true);
+                } catch (e) {
+                  setFpError('오탐 신고 실패: ' + e.message);
+                } finally {
+                  setFpLoading(false);
+                }
+              }}
+            >
+              {fpDone || notification.falsePositive ? '오탐 신고 완료' : fpLoading ? '처리 중...' : '오탐 신고'}
+            </button>
+          </div>
+          {fpError && <p style={{ color: '#f87171', marginTop: 8 }}>{fpError}</p>}
         </>
       )}
     </div>

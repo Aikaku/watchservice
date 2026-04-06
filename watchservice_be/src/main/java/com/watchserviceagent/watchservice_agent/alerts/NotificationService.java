@@ -135,6 +135,13 @@ public class NotificationService {
         return result;
     }
 
+    public void markFalsePositive(String ownerKey, long id) {
+        int updated = notificationRepository.markFalsePositive(ownerKey, id);
+        if (updated == 0) {
+            throw new NoSuchElementException("notification not found: id=" + id);
+        }
+    }
+
     /**
      * 메인보드(대시보드)에서 최근 guidance를 보여주기 위한 최신 알림 조회
      */
@@ -157,6 +164,7 @@ public class NotificationService {
                 .guidance(notification.getGuidance())
                 .affectedFilesCount(notification.getAffectedFilesCount())
                 .affectedPaths(notification.getAffectedPaths())
+                .falsePositive(notification.isFalsePositive())
                 .build();
     }
 

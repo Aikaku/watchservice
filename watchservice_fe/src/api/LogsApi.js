@@ -97,3 +97,11 @@ export function deleteLogs(ids = []) {
 export function exportLogs(req) {
   return post('/logs/export', req);
 }
+
+export function fetchTopFiles(limit = 10) {
+  return get(`/logs/top-files?limit=${Number(limit) || 10}`);
+}
+
+export function fetchExtensionStats(limit = 20) {
+  return get(`/logs/extension-stats?limit=${Number(limit) || 20}`);
+}

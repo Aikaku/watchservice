@@ -34,5 +34,8 @@ public class Notification {
     // 영향 받은 파일 정보
     private final int affectedFilesCount;
     private final List<String> affectedPaths;  // 전체 경로 리스트
+
+    // 오탐 신고 여부
+    private final boolean falsePositive;
 }
 

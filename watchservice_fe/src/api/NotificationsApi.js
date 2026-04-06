@@ -4,7 +4,7 @@
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-import { get } from './HttpClient';
+import { get, patch } from './HttpClient';
 
 /**
  * 함수 이름 : toQuery
@@ -115,4 +115,8 @@ export async function fetchAlertStats() {
   return {
     counter: res?.counter || { total: 0, DANGER: 0, WARNING: 0, SAFE: 0, UNKNOWN: 0 },
   };
+}
+
+export function reportFalsePositive(id) {
+  return patch(`/notifications/${id}/false-positive`);
 }

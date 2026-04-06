@@ -15,6 +15,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 클래스 이름 : LogService
@@ -274,6 +276,20 @@ public class LogService {
     }
 
     private record SortInfo(String field, String dir) {}
+
+    public List<Map<String, Object>> getTopFiles(String ownerKey, int limit) {
+        int lim = (limit <= 0 || limit > 100) ? 10 : limit;
+        return logRepository.findTopFiles(ownerKey, lim).stream()
+                .map(r -> Map.<String, Object>of("path", r.path(), "changeCount", r.changeCount()))
+                .collect(Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getExtensionStats(String ownerKey, int limit) {
+        int lim = (limit <= 0 || limit > 200) ? 20 : limit;
+        return logRepository.findExtensionStats(ownerKey, lim).stream()
+                .map(r -> Map.<String, Object>of("ext", r.ext(), "count", r.count()))
+                .collect(Collectors.toList());
+    }
 
     @lombok.Getter
     @lombok.Builder

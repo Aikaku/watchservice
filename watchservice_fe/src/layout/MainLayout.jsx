@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import NavSidebar from '../components/common/NavSidebar';
+import AudioAlert from '../components/common/AudioAlert';
 
 /**
  * 함수 이름 : MainLayout
@@ -18,6 +19,7 @@ import NavSidebar from '../components/common/NavSidebar';
 function MainLayout({ children }) {
   return (
     <div className="app-root">
+      <AudioAlert />
       {/* 상단 제목바 느낌 (나중에 윈도우 컨트롤 버튼 넣을 자리) */}
       <header className="app-header">
         <div className="app-title">WatchService Agent</div>

@@ -5,6 +5,7 @@ import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationResponse;
 import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
@@ -67,6 +68,13 @@ public class NotificationController {
     public Map<String, Object> getStats(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         return notificationService.getStats(ownerKey);
+    }
+
+    @PatchMapping("/{id}/false-positive")
+    public ResponseEntity<Void> markFalsePositive(@PathVariable("id") long id, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        notificationService.markFalsePositive(ownerKey, id);
+        return ResponseEntity.noContent().build();
     }
 }
 

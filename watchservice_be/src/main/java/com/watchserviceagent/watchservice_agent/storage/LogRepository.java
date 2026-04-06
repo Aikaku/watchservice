@@ -488,6 +488,47 @@ public class LogRepository {
 
     public record OwnerKeyStat(String ownerKey, long count) {}
 
+    // ====== 통계 API 지원 ======
+
+    public record TopFileRow(String path, long changeCount) {}
+
+    public List<TopFileRow> findTopFiles(String ownerKey, int limit) {
+        String sql = """
+                SELECT path, COUNT(*) AS change_count
+                FROM log
+                WHERE owner_key = ?
+                GROUP BY path
+                ORDER BY change_count DESC
+                LIMIT ?
+                """;
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> new TopFileRow(rs.getString("path"), rs.getLong("change_count")),
+                ownerKey, limit);
+    }
+
+    public record ExtensionStatRow(String ext, long count) {}
+
+    public List<ExtensionStatRow> findExtensionStats(String ownerKey, int limit) {
+        String sql = """
+                SELECT
+                    COALESCE(NULLIF(LOWER(TRIM(ext_after)), ''), NULLIF(LOWER(TRIM(ext_before)), ''), '(없음)') AS ext,
+                    COUNT(*) AS cnt
+                FROM log
+                WHERE owner_key = ?
+                  AND (
+                    (ext_after  IS NOT NULL AND TRIM(ext_after)  <> '')
+                    OR
+                    (ext_before IS NOT NULL AND TRIM(ext_before) <> '')
+                  )
+                GROUP BY ext
+                ORDER BY cnt DESC
+                LIMIT ?
+                """;
+        return jdbcTemplate.query(sql,
+                (rs, rowNum) -> new ExtensionStatRow(rs.getString("ext"), rs.getLong("cnt")),
+                ownerKey, limit);
+    }
+
     // ====== ALERTS 전용 API 지원 메서드들 ======
 
     /**

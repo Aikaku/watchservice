@@ -62,6 +62,10 @@ export async function browseFolders(path = '') {
   return request(`/settings/folders/browse${qs}`, { method: 'GET' });
 }
 
+export async function pickFolderPath() {
+  return request('/settings/folders/pick', { method: 'GET' });
+}
+
 export async function createWatchedFolder(payload) {
   // payload: {name, path}
   return request('/settings/folders', { method: 'POST', body: payload });

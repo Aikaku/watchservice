@@ -62,6 +62,10 @@ public class NotificationRepository {
             jdbcTemplate.execute("ALTER TABLE notification ADD COLUMN guidance TEXT");
         } catch (Exception ignore) {}
 
+        try {
+            jdbcTemplate.execute("ALTER TABLE notification ADD COLUMN is_false_positive INTEGER DEFAULT 0");
+        } catch (Exception ignore) {}
+
         log.info("[NotificationRepository] notification 테이블 초기화 완료");
     }
 
@@ -126,7 +130,8 @@ public class NotificationRepository {
                 SELECT
                     id, owner_key, window_start, window_end, created_at,
                     ai_label, ai_score, top_family, ai_detail, guidance,
-                    affected_files_count, affected_paths
+                    affected_files_count, affected_paths,
+                    COALESCE(is_false_positive, 0) AS is_false_positive
                 FROM notification
                 WHERE owner_key = ? AND id = ?
                 LIMIT 1
@@ -183,7 +188,8 @@ public class NotificationRepository {
                 SELECT
                     id, owner_key, window_start, window_end, created_at,
                     ai_label, ai_score, top_family, ai_detail, guidance,
-                    affected_files_count, affected_paths
+                    affected_files_count, affected_paths,
+                    COALESCE(is_false_positive, 0) AS is_false_positive
                 FROM notification
                 """ + sp.whereClause + " " + orderBy + " LIMIT ? OFFSET ?";
 
@@ -221,6 +227,7 @@ public class NotificationRepository {
                         .guidance(rs.getString("guidance"))
                         .affectedFilesCount(rs.getInt("affected_files_count"))
                         .affectedPaths(affectedPaths)
+                        .falsePositive(rs.getInt("is_false_positive") != 0)
                         .build();
             }
         };
@@ -234,7 +241,8 @@ public class NotificationRepository {
                 SELECT
                     id, owner_key, window_start, window_end, created_at,
                     ai_label, ai_score, top_family, ai_detail, guidance,
-                    affected_files_count, affected_paths
+                    affected_files_count, affected_paths,
+                    COALESCE(is_false_positive, 0) AS is_false_positive
                 FROM notification
                 WHERE owner_key = ?
                 ORDER BY created_at DESC, id DESC
@@ -348,7 +356,8 @@ public class NotificationRepository {
                 SELECT
                     id, owner_key, window_start, window_end, created_at,
                     ai_label, ai_score, top_family, ai_detail, guidance,
-                    affected_files_count, affected_paths
+                    affected_files_count, affected_paths,
+                    COALESCE(is_false_positive, 0) AS is_false_positive
                 FROM notification
                 """ + sp.whereClause + " " + orderBy + " LIMIT ? OFFSET ?";
         List<Object> params = new ArrayList<>(sp.params);
@@ -401,5 +410,11 @@ public class NotificationRepository {
     }
 
     public record OwnerKeyStat(String ownerKey, long count) {}
+
+    public int markFalsePositive(String ownerKey, long id) {
+        return jdbcTemplate.update(
+                "UPDATE notification SET is_false_positive = 1 WHERE owner_key = ? AND id = ?",
+                ownerKey, id);
+    }
 }
 

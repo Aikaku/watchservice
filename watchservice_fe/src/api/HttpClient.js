@@ -98,3 +98,12 @@ export function put(path, body) {
     body: JSON.stringify(body ?? {}),
   });
 }
+
+export function patch(path, body) {
+  const opts = { method: 'PATCH' };
+  if (body !== undefined) {
+    opts.headers = { 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  return request(path, opts);
+}
