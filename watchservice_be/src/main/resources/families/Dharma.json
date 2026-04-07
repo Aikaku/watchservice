@@ -1,0 +1,1 @@
+{"name":"Dharma","firstSeen":"2016","attackMethod":"RDP 포트 직접 스캔 후 브루트포스 또는 취약한 자격증명으로 침투. 포렌식 회피를 위해 AV 비활성화 시도.","targets":["중소기업","의료","교육"],"knownExtensions":[".dharma",".cezar",".java",".adobe",".id-XXXX"],"mitigation":"RDP(3389) 포트 외부 노출 차단, 강력한 비밀번호 + MFA, 원격 접속 VPN으로 제한"}

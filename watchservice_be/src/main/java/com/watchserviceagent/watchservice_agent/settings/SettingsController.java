@@ -1,5 +1,6 @@
 package com.watchserviceagent.watchservice_agent.settings;
 
+import com.watchserviceagent.watchservice_agent.alerts.EmailNotificationService;
 import com.watchserviceagent.watchservice_agent.common.ApiResponse;
 import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import com.watchserviceagent.watchservice_agent.settings.dto.ExceptionRuleRequest;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/settings")
@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 public class SettingsController {
 
     private final SettingsService settingsService;
+    private final EmailNotificationService emailNotificationService;
 
     @GetMapping("/folders/browse")
     public ApiResponse<Map<String, Object>> browseDirectory(
@@ -108,6 +109,37 @@ public class SettingsController {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         settingsService.deleteExceptionRule(ownerKey, id);
         log.info("[SettingsController] DELETE /settings/exceptions/{}", id);
+        return ApiResponse.ok();
+    }
+
+    // ===== 이메일 알림 설정 =====
+
+    @GetMapping("/alert-email")
+    public ApiResponse<Map<String, String>> getAlertEmail(HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        String email = settingsService.getAlertEmail(ownerKey);
+        log.info("[SettingsController] GET /settings/alert-email ownerKey={}", ownerKey);
+        return ApiResponse.ok(Map.of("email", email));
+    }
+
+    @PutMapping("/alert-email")
+    public ApiResponse<Void> updateAlertEmail(@RequestBody Map<String, String> body, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        String email = body.getOrDefault("email", "");
+        settingsService.updateAlertEmail(ownerKey, email);
+        log.info("[SettingsController] PUT /settings/alert-email ownerKey={}", ownerKey);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/alert-email/test")
+    public ApiResponse<Void> sendTestEmail(@RequestBody Map<String, String> body, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        String email = body.getOrDefault("email", "");
+        if (email.isBlank()) {
+            throw new IllegalArgumentException("이메일 주소를 입력해 주세요.");
+        }
+        emailNotificationService.sendTestEmail(email);
+        log.info("[SettingsController] POST /settings/alert-email/test ownerKey={}", ownerKey);
         return ApiResponse.ok();
     }
 }

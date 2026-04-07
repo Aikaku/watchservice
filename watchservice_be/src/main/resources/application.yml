@@ -80,6 +80,21 @@ user:
   # 일반 사용자 접속 비밀번호 (USER_AUTH_ENABLED=true 일 때 필수)
   password: ${USER_PASSWORD:}
 
+# 이메일 알림 (DANGER 탐지 시 발송)
+# SMTP_USERNAME/SMTP_PASSWORD 환경변수로 설정. 미설정 시 이메일 알림 비활성화.
+spring:
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 watchservice:
   analytics:
     window-ms: 3000

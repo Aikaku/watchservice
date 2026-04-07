@@ -1,0 +1,1 @@
+{"name":"Shade","firstSeen":"2014","attackMethod":"이메일 스팸으로 배포. Trojan 계열 악성코드와 함께 동작. 2020년 운영 종료 후 복호화 키 공개.","targets":["러시아·동유럽 개인·기업"],"knownExtensions":[".xtbl",".ytbl",".breaking_bad",".heisenberg"],"mitigation":"이메일 필터링, 정기 백업, 운영 종료로 현재 무료 복호화 가능"}

@@ -3,6 +3,7 @@ package com.watchserviceagent.watchservice_agent.alerts;
 import com.watchserviceagent.watchservice_agent.alerts.domain.Notification;
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationPageResponse;
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationResponse;
+import com.watchserviceagent.watchservice_agent.settings.SettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final EmailNotificationService emailNotificationService;
+    private final SettingsService settingsService;
 
     private static final int MAX_PAGE_SIZE = 1000;
     private static final DateTimeFormatter DATE_TIME_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -108,6 +111,13 @@ public class NotificationService {
      */
     public void saveNotification(Notification notification) {
         notificationRepository.insertNotification(notification);
+
+        if ("DANGER".equals(notification.getAiLabel())) {
+            String email = settingsService.getAlertEmail(notification.getOwnerKey());
+            if (email != null && !email.isBlank()) {
+                emailNotificationService.sendDangerAlert(email, notification);
+            }
+        }
     }
 
     /**

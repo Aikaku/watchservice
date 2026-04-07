@@ -3,6 +3,7 @@ package com.watchserviceagent.watchservice_agent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 /**
  * 클래스 이름 : WatchserviceAgentApplication
@@ -11,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * 작성자 : 시스템
  */
 @Slf4j
+@EnableAsync
 @SpringBootApplication
 public class WatchserviceAgentApplication {
 

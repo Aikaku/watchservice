@@ -1,0 +1,1 @@
+{"name":"WannaCry","firstSeen":"2017","attackMethod":"SMB 취약점(EternalBlue, MS17-010) 익스플로잇으로 네트워크 자동 전파. 랜섬 키를 C2 서버에 전송하며, 결제 없이는 복호화 불가.","targets":["Windows XP~7","의료기관","물류·운송","통신사"],"knownExtensions":[".WCRY",".WNCRY",".WNCRYT"],"mitigation":"MS17-010 보안 패치 즉시 적용, SMB 포트(445) 외부 차단, 오프라인 백업 유지, 감염 시 네트워크 즉시 격리"}

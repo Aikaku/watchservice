@@ -1,0 +1,1 @@
+{"name":"Ryuk","firstSeen":"2018","attackMethod":"Trickbot·BazarLoader 등 다른 악성코드로 초기 침투 후 수동 배포. 도메인 컨트롤러 탈취 → 전사 암호화. 백업·섀도 복사본 삭제 특화.","targets":["대형 병원","지방 정부","인쇄·미디어"],"knownExtensions":[".ryk",".ryuk"],"mitigation":"Trickbot 감염 징후 조기 탐지, 도메인 관리자 계정 최소 권한 원칙, 백업 서버 네트워크 격리"}

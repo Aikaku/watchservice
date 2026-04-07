@@ -49,6 +49,17 @@ function playAlert(label) {
   }
 }
 
+function isSoundEnabled() {
+  try {
+    const raw = localStorage.getItem('watchservice.notifySettings');
+    if (!raw) return true; // 설정 없으면 기본 ON
+    const s = JSON.parse(raw);
+    return s.sound !== false;
+  } catch (_) {
+    return true;
+  }
+}
+
 function AudioAlert() {
   const lastIdRef = useRef(null);
   const initializedRef = useRef(false);
@@ -69,7 +80,7 @@ function AudioAlert() {
 
         if (latest.id !== lastIdRef.current) {
           lastIdRef.current = latest.id;
-          playAlert(latest.aiLabel);
+          if (isSoundEnabled()) playAlert(latest.aiLabel);
         }
       } catch (_) {
         // 폴링 실패는 조용히 무시

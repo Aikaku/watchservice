@@ -1,0 +1,1 @@
+{"name":"Conti","firstSeen":"2020","attackMethod":"이메일 피싱 또는 Cobalt Strike 배포. 빠른 멀티스레드 암호화로 단시간에 전체 파일 암호화. 내부 망 이동에 특화.","targets":["의료기관","정부기관","대기업","교육"],"knownExtensions":[".conti",".CONTI"],"mitigation":"이메일 첨부파일 샌드박스 검사, 네트워크 마이크로 세분화, 지속적인 IOC 모니터링"}

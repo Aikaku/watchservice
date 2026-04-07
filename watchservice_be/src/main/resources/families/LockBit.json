@@ -1,0 +1,1 @@
+{"name":"LockBit","firstSeen":"2019","attackMethod":"RaaS(Ransomware-as-a-Service) 모델. 취약한 RDP·VPN 자격증명 또는 피싱으로 초기 침투 후 내부 확산. 파일 암호화와 동시에 데이터 유출(이중 갈취).","targets":["기업 네트워크","의료기관","금융기관","제조업"],"knownExtensions":[".lockbit",".lock",".abcd"],"mitigation":"강력한 RDP 비밀번호 + MFA 적용, VPN 취약점 즉시 패치, 네트워크 세분화, 중요 데이터 격리 백업"}

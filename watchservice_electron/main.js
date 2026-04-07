@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, shell } = require('electron');
+const { app, BrowserWindow, Tray, Menu, nativeImage, shell, screen } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const http = require('http');
@@ -14,6 +14,13 @@ const SPRING_READY_TIMEOUT_MS = 60000; // 최대 대기 시간 (60초)
 let mainWindow = null;
 let tray = null;
 let springProcess = null;
+
+// ──────────────────────────────────────────────
+// 긴급 경보 상태
+// ──────────────────────────────────────────────
+let emergencyWindow = null;
+let lastDangerNotificationId = -1;
+let dangerPollInterval = null;
 
 // ──────────────────────────────────────────────
 // Spring Boot JAR 경로 결정
@@ -249,6 +256,7 @@ app.whenReady().then(async () => {
     mainWindow.close();
     mainWindow = null;
     createWindow();
+    startDangerPolling();
   } catch (err) {
     console.error('[Electron] 시작 실패:', err.message);
     if (mainWindow && !mainWindow.isDestroyed()) {
@@ -258,10 +266,84 @@ app.whenReady().then(async () => {
 });
 
 // ──────────────────────────────────────────────
+// 긴급 전체 화면 경보
+// ──────────────────────────────────────────────
+function showEmergencyWindow(notification) {
+  if (emergencyWindow && !emergencyWindow.isDestroyed()) return; // 중복 방지
+
+  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+
+  const params = new URLSearchParams({
+    detectedAt: notification.createdAt || '',
+    family: notification.familyName || '',
+    guidance: notification.guidance ? notification.guidance.slice(0, 120) : '',
+  });
+
+  emergencyWindow = new BrowserWindow({
+    width,
+    height,
+    fullscreen: true,
+    alwaysOnTop: true,
+    frame: false,
+    skipTaskbar: false,
+    webPreferences: { contextIsolation: true },
+  });
+
+  emergencyWindow.loadFile(
+    path.join(__dirname, 'assets', 'emergency.html'),
+    { query: Object.fromEntries(params) }
+  );
+
+  emergencyWindow.on('closed', () => { emergencyWindow = null; });
+}
+
+function startDangerPolling() {
+  if (dangerPollInterval) return;
+
+  dangerPollInterval = setInterval(() => {
+    const req = http.get(
+      `http://localhost:${PORT}/notifications?level=DANGER&size=1&page=1&sort=createdAt,desc`,
+      { headers: { Accept: 'application/json' } },
+      (res) => {
+        let body = '';
+        res.on('data', (chunk) => { body += chunk; });
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(body);
+            // ApiResponse 래퍼 자동 unwrap
+            const payload = (json && 'data' in json) ? json.data : json;
+            const items = payload?.items ?? [];
+            if (items.length === 0) return;
+
+            const latest = items[0];
+            const latestId = latest.id ?? latest.notificationId;
+            if (latestId === undefined || latestId === null) return;
+
+            if (lastDangerNotificationId === -1) {
+              // 첫 폴링 — 기준 ID 저장만, 경보 없음
+              lastDangerNotificationId = latestId;
+              return;
+            }
+
+            if (latestId !== lastDangerNotificationId) {
+              lastDangerNotificationId = latestId;
+              showEmergencyWindow(latest);
+            }
+          } catch (_) { /* JSON 파싱 실패 무시 */ }
+        });
+      }
+    );
+    req.on('error', () => { /* 폴링 오류 무시 */ });
+    req.setTimeout(2000, () => req.destroy());
+  }, 3000); // 3초 간격
+}
+
+// ──────────────────────────────────────────────
 // 앱 종료 시 Spring Boot 프로세스 정리
 // ──────────────────────────────────────────────
 app.on('before-quit', () => {
   app.isQuiting = true;
+  if (dangerPollInterval) { clearInterval(dangerPollInterval); dangerPollInterval = null; }
   if (springProcess) {
     console.log('[Electron] Spring Boot 종료 중...');
     springProcess.kill('SIGTERM');

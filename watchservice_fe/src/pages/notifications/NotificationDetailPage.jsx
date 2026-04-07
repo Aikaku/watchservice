@@ -7,6 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { fetchAlertDetail, reportFalsePositive } from '../../api/NotificationsApi';
+import FamilyInfoModal from '../../components/notifications/FamilyInfoModal';
 
 /**
  * 함수 이름 : NotificationDetailPage
@@ -29,6 +30,7 @@ function NotificationDetailPage() {
   const [fpDone, setFpDone] = useState(false);
   const [fpLoading, setFpLoading] = useState(false);
   const [fpError, setFpError] = useState(null);
+  const [familyModalName, setFamilyModalName] = useState(null);
 
   useEffect(() => {
     if (stateItem) return;
@@ -79,7 +81,20 @@ function NotificationDetailPage() {
             <h2 style={{ marginTop: 24 }}>AI 분석 결과</h2>
             <p><strong>위험도:</strong> {notification.aiLabel || 'UNKNOWN'}</p>
             <p><strong>AI 점수:</strong> {notification.aiScore != null ? (notification.aiScore * 100).toFixed(2) + '%' : '-'}</p>
-            <p><strong>탑 패밀리:</strong> {notification.topFamily || '-'}</p>
+            <p>
+              <strong>탑 패밀리:</strong>{' '}
+              {notification.topFamily ? (
+                <button
+                  onClick={() => setFamilyModalName(notification.topFamily)}
+                  style={{
+                    background: 'none', border: 'none', padding: 0,
+                    color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline', fontSize: 'inherit',
+                  }}
+                >
+                  {notification.topFamily}
+                </button>
+              ) : '-'}
+            </p>
             {notification.aiDetail && (
               <>
                 <p><strong>AI 상세:</strong></p>
@@ -140,6 +155,13 @@ function NotificationDetailPage() {
           </div>
           {fpError && <p style={{ color: '#f87171', marginTop: 8 }}>{fpError}</p>}
         </>
+      )}
+
+      {familyModalName && (
+        <FamilyInfoModal
+          familyName={familyModalName}
+          onClose={() => setFamilyModalName(null)}
+        />
       )}
     </div>
   );

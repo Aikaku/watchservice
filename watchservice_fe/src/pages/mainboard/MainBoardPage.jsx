@@ -15,6 +15,7 @@ import { useToast } from '../../components/common/Toast';
 import ProtectionStatusBadge from '../../components/protection/ProtectionStatusBadge';
 import ScanControlPanel from '../../components/protection/ScanControlPanel';
 import RecentEventsPanel from '../../components/protection/RecentEventsPanel';
+import ScanResultModal from '../../components/scan/ScanResultModal';
 
 /**
  * 함수 이름 : MainBoardPage
@@ -42,6 +43,9 @@ function MainBoardPage() {
 
   /** 스캔 진행률 폴링을 위한 ref */
   const pollRef = useRef(null);
+
+  /** 스캔 결과 모달 */
+  const [scanResult, setScanResult] = useState(null);
 
   /** 감시 폴더 훅 */
   const { folders, promptAndAddFolder, removeFolder } = useWatchedFolders();
@@ -254,6 +258,7 @@ function MainBoardPage() {
         if (p?.status === 'DONE' || percent >= 100) {
           setIsScanning(false);
           setScanProgress(100);
+          setScanResult({ scanned: p?.scanned ?? 0, total: p?.total ?? 0 });
           setScanId(null); // ✅ 완료 후 scanId 정리
 
           clearInterval(pollRef.current);
@@ -309,6 +314,10 @@ function MainBoardPage() {
 
   return (
     <div className="mainboard-root">
+      {scanResult && (
+        <ScanResultModal result={scanResult} onClose={() => setScanResult(null)} />
+      )}
+
       <header className="mainboard-header">
         <h1>WatchService Agent</h1>
       </header>

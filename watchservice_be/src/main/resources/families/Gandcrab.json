@@ -1,0 +1,1 @@
+{"name":"Gandcrab","firstSeen":"2018","attackMethod":"이메일 스팸, 익스플로잇 킷, 가짜 소프트웨어 업데이트로 배포. 최초 RaaS 방식으로 대규모 확산. 2019년 운영 종료 선언.","targets":["개인·중소기업","Windows 사용자 전반"],"knownExtensions":[".GDCB",".CRAB",".KRAB",".gdcb"],"mitigation":"소프트웨어 공식 채널만 이용, 이메일 첨부파일 주의, 정기 백업"}

@@ -86,4 +86,19 @@ public class SettingsService {
         settingsRepository.deleteExceptionRule(ownerKey, id);
         log.info("[SettingsService] 예외 규칙 삭제: id={}", id);
     }
+
+    // ===== 이메일 알림 =====
+
+    private static final String KEY_ALERT_EMAIL = "alert_email";
+
+    public String getAlertEmail(String ownerKey) {
+        String v = settingsRepository.getAppSetting(ownerKey, KEY_ALERT_EMAIL);
+        return v == null ? "" : v;
+    }
+
+    public void updateAlertEmail(String ownerKey, String email) {
+        if (email == null) email = "";
+        settingsRepository.setAppSetting(ownerKey, KEY_ALERT_EMAIL, email.trim());
+        log.info("[SettingsService] 알림 이메일 업데이트: ownerKey={}", ownerKey);
+    }
 }

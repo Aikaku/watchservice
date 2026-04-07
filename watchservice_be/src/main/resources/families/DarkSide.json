@@ -1,0 +1,1 @@
+{"name":"DarkSide","firstSeen":"2020","attackMethod":"RaaS 모델. 피싱 이메일 또는 취약한 원격 접속으로 침투. 산업 제어 시스템 공격에 활용됨. Colonial Pipeline 공격으로 알려짐.","targets":["에너지·파이프라인","제조","금융"],"knownExtensions":[".ds_backup_files"],"mitigation":"OT/ICS 네트워크 분리, 원격 접속 MFA 강제, 중요 인프라 백업 오프라인 보관"}

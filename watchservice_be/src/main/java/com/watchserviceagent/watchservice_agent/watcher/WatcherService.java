@@ -1,5 +1,7 @@
 package com.watchserviceagent.watchservice_agent.watcher;
 
+import com.watchserviceagent.watchservice_agent.alerts.NotificationService;
+import com.watchserviceagent.watchservice_agent.alerts.domain.Notification;
 import com.watchserviceagent.watchservice_agent.analytics.EventWindowAggregator;
 import com.watchserviceagent.watchservice_agent.collector.FileCollectorService;
 import com.watchserviceagent.watchservice_agent.collector.dto.FileAnalysisResult;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,6 +31,7 @@ public class WatcherService {
 
     private final FileCollectorService fileCollectorService;
     private final EventWindowAggregator eventWindowAggregator;
+    private final NotificationService notificationService;
 
     // 사용자별 감시 상태
     private static class UserWatcherState {
@@ -37,6 +41,8 @@ public class WatcherService {
         volatile boolean running = false;
         final Map<WatchKey, Path> keyDirMap = new ConcurrentHashMap<>();
         final List<Path> watchedRoots = new ArrayList<>();
+        // 상위 폴더 WatchKey → 해당 WatchKey가 감시하는 루트들 (삭제 감지용)
+        final Map<WatchKey, List<Path>> parentKeyToRoots = new ConcurrentHashMap<>();
 
         UserWatcherState(String ownerKey) {
             this.ownerKey = ownerKey;
@@ -96,10 +102,28 @@ public class WatcherService {
         state.watchService = FileSystems.getDefault().newWatchService();
         state.keyDirMap.clear();
         state.watchedRoots.clear();
+        state.parentKeyToRoots.clear();
         state.watchedRoots.addAll(roots);
 
         for (Path root : roots) {
             registerAll(state, root);
+            // 루트의 상위 디렉토리도 등록하여 루트 자체 삭제·이름 변경 감지
+            Path parent = root.getParent();
+            if (parent != null && Files.isDirectory(parent)) {
+                try {
+                    WatchKey parentKey = parent.register(
+                            state.watchService,
+                            StandardWatchEventKinds.ENTRY_CREATE,
+                            StandardWatchEventKinds.ENTRY_DELETE
+                    );
+                    state.parentKeyToRoots
+                            .computeIfAbsent(parentKey, k -> new ArrayList<>())
+                            .add(root);
+                    log.info("[WatcherService] 상위 폴더 등록(삭제 감지): {}", parent);
+                } catch (IOException e) {
+                    log.warn("[WatcherService] 상위 폴더 등록 실패: {}", parent, e);
+                }
+            }
         }
 
         state.running = true;
@@ -163,6 +187,7 @@ public class WatcherService {
 
         state.keyDirMap.clear();
         state.watchedRoots.clear();
+        state.parentKeyToRoots.clear();
         userWatcherStates.remove(ownerKey);
 
         // 종료 시 남은 윈도우 flush
@@ -195,6 +220,30 @@ public class WatcherService {
                 } catch (ClosedWatchServiceException e) {
                     log.info("WatchService has been closed. stop watcher loop.");
                     break;
+                }
+
+                // 상위 폴더 이벤트(루트 폴더 삭제 감지) 처리
+                List<Path> watchedByParent = state.parentKeyToRoots.get(key);
+                if (watchedByParent != null) {
+                    for (WatchEvent<?> event : key.pollEvents()) {
+                        if (event.kind() == StandardWatchEventKinds.OVERFLOW) continue;
+                        if (event.kind() != StandardWatchEventKinds.ENTRY_DELETE) {
+                            key.reset();
+                            continue;
+                        }
+                        @SuppressWarnings("unchecked")
+                        WatchEvent<Path> ev = (WatchEvent<Path>) event;
+                        Path deletedName = ev.context();
+
+                        for (Path root : watchedByParent) {
+                            if (root.getFileName() != null && root.getFileName().equals(deletedName)) {
+                                log.warn("[WatcherService] 감시 루트 폴더 삭제 감지! path={} ownerKey={}", root, ownerKey);
+                                triggerRootDeletedDanger(ownerKey, root.toAbsolutePath().toString());
+                            }
+                        }
+                    }
+                    key.reset();
+                    continue;
                 }
 
                 Path dir = state.keyDirMap.get(key);
@@ -268,6 +317,32 @@ public class WatcherService {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
+    /**
+     * 감시 루트 폴더 삭제 감지 시 AI 우회하여 DANGER 알림을 즉시 생성한다.
+     */
+    private void triggerRootDeletedDanger(String ownerKey, String deletedPath) {
+        try {
+            Notification notification = Notification.builder()
+                    .ownerKey(ownerKey)
+                    .windowStart(Instant.now())
+                    .windowEnd(Instant.now())
+                    .createdAt(Instant.now())
+                    .aiLabel("DANGER")
+                    .aiScore(1.0)
+                    .topFamily(null)
+                    .aiDetail("감시 폴더 자체가 삭제되었습니다: " + deletedPath)
+                    .guidance("즉시 시스템을 격리하고 백업 상태를 확인하세요. 랜섬웨어가 폴더 구조를 파괴했을 수 있습니다.")
+                    .affectedFilesCount(1)
+                    .affectedPaths(List.of(deletedPath))
+                    .falsePositive(false)
+                    .build();
+            notificationService.saveNotification(notification);
+            log.warn("[WatcherService] 루트 폴더 삭제 DANGER 알림 저장 완료. path={}", deletedPath);
+        } catch (Exception e) {
+            log.error("[WatcherService] 루트 폴더 삭제 알림 저장 실패", e);
+        }
+    }
+
     private String mapKindToEventType(WatchEvent.Kind<?> kind) {
         if (kind == StandardWatchEventKinds.ENTRY_CREATE) return "CREATE";
         if (kind == StandardWatchEventKinds.ENTRY_MODIFY) return "MODIFY";

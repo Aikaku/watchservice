@@ -31,6 +31,7 @@ public class SettingsRepository {
     public void init() {
         createWatchedFolderTable();
         createExceptionRuleTable();
+        createAppSettingsTable();
     }
 
     private void createWatchedFolderTable() {
@@ -45,6 +46,36 @@ public class SettingsRepository {
                 """;
         jdbcTemplate.execute(sql);
         log.info("[SettingsRepository] watched_folder 테이블 초기화 완료");
+    }
+
+    private void createAppSettingsTable() {
+        String sql = """
+                CREATE TABLE IF NOT EXISTS app_settings (
+                    owner_key  TEXT NOT NULL,
+                    key        TEXT NOT NULL,
+                    value      TEXT,
+                    PRIMARY KEY (owner_key, key)
+                );
+                """;
+        jdbcTemplate.execute(sql);
+        log.info("[SettingsRepository] app_settings 테이블 초기화 완료");
+    }
+
+    // ===== app_settings (key-value) =====
+
+    public String getAppSetting(String ownerKey, String key) {
+        String sql = "SELECT value FROM app_settings WHERE owner_key = ? AND key = ? LIMIT 1";
+        List<String> rows = jdbcTemplate.query(sql, (rs, i) -> rs.getString("value"), ownerKey, key);
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    public void setAppSetting(String ownerKey, String key, String value) {
+        String sql = """
+                INSERT INTO app_settings (owner_key, key, value)
+                VALUES (?, ?, ?)
+                ON CONFLICT(owner_key, key) DO UPDATE SET value = excluded.value
+                """;
+        jdbcTemplate.update(sql, ownerKey, key, value);
     }
 
     private void createExceptionRuleTable() {

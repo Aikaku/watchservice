@@ -1,0 +1,1 @@
+{"name":"Phobos","firstSeen":"2019","attackMethod":"취약한 RDP 자격증명 브루트포스로 침투. Dharma 계열. 감염 후 즉시 백업·섀도 복사본 삭제.","targets":["중소기업","의료","교육","지방 정부"],"knownExtensions":[".phobos",".iso",".help",".acute",".id-XXXX"],"mitigation":"RDP 포트 차단 또는 VPN 전용 접속, 비밀번호 정책 강화, 섀도 복사본 별도 보호"}

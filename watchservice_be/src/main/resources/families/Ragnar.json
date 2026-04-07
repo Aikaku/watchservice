@@ -1,0 +1,1 @@
+{"name":"Ragnar","firstSeen":"2019","attackMethod":"Ragnar Locker. Oracle WebLogic 취약점, RDP 브루트포스로 침투. VirtualBox 가상머신 내에서 실행하여 AV 우회.","targets":["에너지","항공","게임","IT 서비스"],"knownExtensions":[".ragnar",".RGNR_XXXX"],"mitigation":"서버 취약점 즉시 패치, 하이퍼바이저 접근 제어 강화, 이상 가상머신 실행 탐지"}

@@ -1,0 +1,1 @@
+{"name":"Cerber","firstSeen":"2016","attackMethod":"이메일 스팸 및 익스플로잇 킷(Neutrino, RIG)으로 배포. 암호화 후 음성 메시지로 감염 알림. C2 통신에 UDP 사용.","targets":["Windows 개인·기업 사용자","클라우드 파일 동기화 폴더"],"knownExtensions":[".cerber",".cerber2",".cerber3"],"mitigation":"이메일 필터링 강화, 오피스 매크로 비활성화, 클라우드 동기화 폴더 버전 관리 유지"}

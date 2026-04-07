@@ -1,0 +1,1 @@
+{"name":"REvil","firstSeen":"2019","attackMethod":"Sodinokibi라고도 불림. VPN·RDP 취약점 또는 공급망 공격으로 침투. 데이터 유출 후 암호화(이중 갈취). 오픈소스 펜테스팅 툴 남용.","targets":["법무법인","IT 공급망","에너지","유통"],"knownExtensions":[".sodinokibi",".r3v1l",".revil"],"mitigation":"소프트웨어 공급망 검증 강화, VPN 패치, 이상 프로세스 모니터링, 정기 오프라인 백업"}
