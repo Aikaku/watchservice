@@ -22,6 +22,7 @@ async function request(path, options = {}) {
 
   const finalOptions = {
     credentials: 'include',
+    signal: AbortSignal.timeout(10000),
     ...options,
     headers: {
       ...(options.headers || {}),

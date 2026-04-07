@@ -6,6 +6,7 @@ import com.watchserviceagent.watchservice_agent.settings.dto.ExceptionRuleRespon
 import com.watchserviceagent.watchservice_agent.settings.dto.WatchedFolderRequest;
 import com.watchserviceagent.watchservice_agent.settings.dto.WatchedFolderResponse;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -98,7 +99,7 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @PostMapping("/folders")
-    public WatchedFolderResponse addWatchedFolder(@RequestBody WatchedFolderRequest req, HttpSession session) {
+    public WatchedFolderResponse addWatchedFolder(@Valid @RequestBody WatchedFolderRequest req, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         WatchedFolderResponse resp = settingsService.addWatchedFolder(ownerKey, req);
         log.info("[SettingsController] POST /settings/folders -> {}", resp);
@@ -145,7 +146,7 @@ public class SettingsController {
      * 작성자 : 시스템
      */
     @PostMapping("/exceptions")
-    public ExceptionRuleResponse addExceptionRule(@RequestBody ExceptionRuleRequest req, HttpSession session) {
+    public ExceptionRuleResponse addExceptionRule(@Valid @RequestBody ExceptionRuleRequest req, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         ExceptionRuleResponse resp = settingsService.addExceptionRule(ownerKey, req);
         log.info("[SettingsController] POST /settings/exceptions -> {}", resp);

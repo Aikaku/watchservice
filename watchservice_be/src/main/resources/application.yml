@@ -59,16 +59,26 @@ gemini:
   timeout-ms: ${GEMINI_TIMEOUT_MS:10000}
 
 cors:
-  # 실서버 배포 시 CORS_ALLOWED_ORIGINS 환경변수로 도메인 지정
-  # 예: CORS_ALLOWED_ORIGINS=https://example.com,https://www.example.com
-  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+  # 실서버 배포 시 CORS_ALLOWED_ORIGINS 환경변수로 실제 도메인만 지정
+  # 예: CORS_ALLOWED_ORIGINS=https://example.com
+  # 주의: localhost:5173(Vite dev) 등 개발 주소는 운영 환경에서 제외할 것
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
 
 admin:
   username: ${ADMIN_USERNAME:admin}
-  # 평문 또는 BCrypt 해시 모두 지원
-  # BCrypt 해시로 교체하려면: new BCryptPasswordEncoder().encode("yourPassword") 값을 ADMIN_PASSWORD에 설정
+  # 반드시 BCrypt 해시로 설정해야 로그인 가능 (평문 비밀번호는 차단됨)
+  # BCrypt 해시 생성: new BCryptPasswordEncoder().encode("yourPassword")
   # 예: ADMIN_PASSWORD=$2a$10$xxx...
+  # ⚠ 기본값(123456789)을 그대로 두면 관리자 로그인이 차단됩니다.
   password: ${ADMIN_PASSWORD:123456789}
+
+user:
+  # 일반 사용자 인증 활성화 여부 (기본: 비활성)
+  # USER_AUTH_ENABLED=true 설정 시 USER_PASSWORD도 반드시 설정해야 함
+  auth:
+    enabled: ${USER_AUTH_ENABLED:false}
+  # 일반 사용자 접속 비밀번호 (USER_AUTH_ENABLED=true 일 때 필수)
+  password: ${USER_PASSWORD:}
 
 watchservice:
   analytics:

@@ -32,6 +32,16 @@ public class AdminAuthController {
         return ResponseEntity.status(401).body(Map.of("error", "invalid_credentials"));
     }
 
+    @GetMapping("/api/admin/check")
+    public ResponseEntity<?> check(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        boolean authed = (session != null) && Boolean.TRUE.equals(session.getAttribute(AdminAuthInterceptor.SESSION_KEY));
+        if (authed) {
+            return ResponseEntity.ok(Map.of("authenticated", true));
+        }
+        return ResponseEntity.status(401).body(Map.of("authenticated", false));
+    }
+
     @PostMapping("/api/admin/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);

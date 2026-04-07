@@ -1,5 +1,7 @@
 package com.watchserviceagent.watchservice_agent.settings.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +19,11 @@ import lombok.Setter;
 @Setter
 public class WatchedFolderRequest {
 
+    @NotBlank(message = "폴더 이름은 필수입니다.")
+    @Size(max = 200, message = "폴더 이름은 200자 이하여야 합니다.")
     private String name;
+
+    @NotBlank(message = "폴더 경로는 필수입니다.")
+    @Size(max = 4096, message = "폴더 경로는 4096자 이하여야 합니다.")
     private String path;
 }

@@ -12,6 +12,10 @@ export function adminLogout() {
   return post('/api/admin/logout', {});
 }
 
+export function adminCheckSession() {
+  return get('/api/admin/check');
+}
+
 export function fetchAdminFeedback() {
   return get('/api/admin/feedback');
 }
