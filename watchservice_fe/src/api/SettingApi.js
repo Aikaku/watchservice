@@ -4,116 +4,70 @@
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-const API_BASE = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-
-/**
- * 함수 이름 : request
- * 기능 : HTTP 요청을 보내고 응답을 처리한다.
- * 매개변수 : path - API 경로, options - 요청 옵션 (method, body)
- * 반환값 : Promise - 응답 데이터
- * 작성 날짜 : 2025/12/17
- * 작성자 : 시스템
- */
-async function request(path, { method = 'GET', body } = {}) {
-  const url = `${API_BASE}${path}`;
-
-  const res = await fetch(url, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  // 204 No Content
-  if (res.status === 204) return null;
-
-  const text = await res.text();
-  const data = text
-    ? (() => {
-        try {
-          return JSON.parse(text);
-        } catch {
-          return text;
-        }
-      })()
-    : null;
-
-  if (!res.ok) {
-    const msg =
-      (data && typeof data === 'object' && (data.message || data.error)) ||
-      (typeof data === 'string' ? data : '') ||
-      `HTTP ${res.status}`;
-    throw new Error(msg);
-  }
-
-  return data;
-}
+import { get, post, put, del } from './HttpClient';
 
 /** =========================
  * Watched Folders
  * ========================= */
-export async function fetchWatchedFolders() {
-  return request('/settings/folders', { method: 'GET' });
+export function fetchWatchedFolders() {
+  return get('/settings/folders');
 }
 
-export async function browseFolders(path = '') {
+export function browseFolders(path = '') {
   const qs = path ? `?path=${encodeURIComponent(path)}` : '';
-  return request(`/settings/folders/browse${qs}`, { method: 'GET' });
+  return get(`/settings/folders/browse${qs}`);
 }
 
-export async function pickFolderPath() {
-  return request('/settings/folders/pick', { method: 'GET' });
+export function pickFolderPath() {
+  return get('/settings/folders/pick');
 }
 
-export async function createWatchedFolder(payload) {
-  // payload: {name, path}
-  return request('/settings/folders', { method: 'POST', body: payload });
+export function createWatchedFolder(payload) {
+  return post('/settings/folders', payload);
 }
 
-export async function deleteWatchedFolder(id) {
-  return request(`/settings/folders/${encodeURIComponent(id)}`, { method: 'DELETE' });
+export function deleteWatchedFolder(id) {
+  return del(`/settings/folders/${encodeURIComponent(id)}`);
 }
 
 /** =========================
  * Exception Rules
  * ========================= */
-export async function fetchExceptionRules() {
-  return request('/settings/exceptions', { method: 'GET' });
+export function fetchExceptionRules() {
+  return get('/settings/exceptions');
 }
 
-export async function createExceptionRule(payload) {
-  // payload: {type, pattern, memo}
-  return request('/settings/exceptions', { method: 'POST', body: payload });
+export function createExceptionRule(payload) {
+  return post('/settings/exceptions', payload);
 }
 
-export async function deleteExceptionRule(id) {
-  return request(`/settings/exceptions/${encodeURIComponent(id)}`, { method: 'DELETE' });
+export function deleteExceptionRule(id) {
+  return del(`/settings/exceptions/${encodeURIComponent(id)}`);
 }
 
 /** =========================
  * Notification Settings
- * (트레이 빼기로 했으니 백엔드 미구현이어도 함수는 유지 가능)
+ * (백엔드 미구현 — 실패 시 프론트에서 localStorage 폴백 처리)
  * ========================= */
-export async function fetchNotificationSettings() {
-  return request('/settings/notification', { method: 'GET' });
+export function fetchNotificationSettings() {
+  return get('/settings/notification');
 }
 
-export async function updateNotificationSettings(payload) {
-  return request('/settings/notification', { method: 'PUT', body: payload });
+export function updateNotificationSettings(payload) {
+  return put('/settings/notification', payload);
 }
 
 /** =========================
  * Reset
+ * (백엔드 미구현 — 실패 시 프론트에서 로컬 초기화로 처리)
  * ========================= */
-export async function resetSettings() {
-  return request('/settings/reset', { method: 'POST', body: {} });
+export function resetSettings() {
+  return post('/settings/reset');
 }
 
 /** =========================
  * Feedback
  * ========================= */
-export async function sendFeedback(payload) {
-  // 관리자 화면에서 조회할 수 있도록 새로운 /api/feedback 엔드포인트 사용
-  return request('/api/feedback', { method: 'POST', body: payload });
+export function sendFeedback(payload) {
+  return post('/api/feedback', payload);
 }
