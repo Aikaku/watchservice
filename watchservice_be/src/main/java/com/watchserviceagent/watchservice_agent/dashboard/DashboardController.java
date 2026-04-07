@@ -3,6 +3,7 @@ package com.watchserviceagent.watchservice_agent.dashboard;
 import com.watchserviceagent.watchservice_agent.alerts.AlertService;
 import com.watchserviceagent.watchservice_agent.alerts.NotificationService;
 import com.watchserviceagent.watchservice_agent.alerts.dto.AlertPageResponse;
+import com.watchserviceagent.watchservice_agent.common.ApiResponse;
 import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import com.watchserviceagent.watchservice_agent.dashboard.dto.DashboardSummaryResponse;
 import com.watchserviceagent.watchservice_agent.settings.SettingsService;
@@ -15,12 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * 클래스 이름 : DashboardController
- * 기능 : 대시보드 요약 정보를 제공하는 REST API 엔드포인트를 제공한다.
- * 작성 날짜 : 2025/12/17
- * 작성자 : 시스템
- */
 @RestController
 @RequestMapping("/dashboard")
 @RequiredArgsConstructor
@@ -32,21 +27,14 @@ public class DashboardController {
     private final NotificationService notificationService;
 
     @GetMapping("/summary")
-    public DashboardSummaryResponse getSummary(HttpSession session) {
+    public ApiResponse<DashboardSummaryResponse> getSummary(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
 
         AlertPageResponse page = alertService.getAlerts(
-                ownerKey,
-                1, 50,
-                null, null,
-                "ALL",
-                null,
-                "collectedAt,desc"
-        );
+                ownerKey, 1, 50, null, null, "ALL", null, "collectedAt,desc");
 
         List<LogResponse> items = page.getItems();
-        int danger = 0;
-        int warning = 0;
+        int danger = 0, warning = 0;
 
         for (LogResponse r : items) {
             if (r.getAiLabel() == null) continue;
@@ -56,24 +44,13 @@ public class DashboardController {
             }
         }
 
-        String status;
-        String statusLabel;
-
-        if (danger > 0) {
-            status = "DANGER";
-            statusLabel = "위험";
-        } else if (warning > 0) {
-            status = "WARNING";
-            statusLabel = "주의";
-        } else {
-            status = "SAFE";
-            statusLabel = "안전";
-        }
+        String status, statusLabel;
+        if (danger > 0) { status = "DANGER"; statusLabel = "위험"; }
+        else if (warning > 0) { status = "WARNING"; statusLabel = "주의"; }
+        else { status = "SAFE"; statusLabel = "안전"; }
 
         String lastEventTime = "-";
-        if (items != null && !items.isEmpty()) {
-            lastEventTime = items.get(0).getCollectedAt();
-        }
+        if (items != null && !items.isEmpty()) lastEventTime = items.get(0).getCollectedAt();
 
         String watchedPath = "-";
         try {
@@ -88,17 +65,14 @@ public class DashboardController {
         } catch (Exception ignore) {}
 
         DashboardSummaryResponse resp = DashboardSummaryResponse.builder()
-                .status(status)
-                .statusLabel(statusLabel)
+                .status(status).statusLabel(statusLabel)
                 .lastEventTime(lastEventTime)
-                .dangerCount(danger)
-                .warningCount(warning)
+                .dangerCount(danger).warningCount(warning)
                 .totalCount(items == null ? 0 : items.size())
-                .watchedPath(watchedPath)
-                .guidance(guidance)
+                .watchedPath(watchedPath).guidance(guidance)
                 .build();
 
         log.info("[DashboardController] /dashboard/summary -> {}", resp);
-        return resp;
+        return ApiResponse.ok(resp);
     }
 }

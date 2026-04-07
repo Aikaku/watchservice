@@ -2,19 +2,14 @@ package com.watchserviceagent.watchservice_agent.alerts;
 
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationPageResponse;
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationResponse;
+import com.watchserviceagent.watchservice_agent.common.ApiResponse;
 import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Map;
 
-/**
- * 클래스 이름 : NotificationController
- * 기능 : 알림(윈도우 단위 AI 분석 결과) 조회를 제공하는 REST API 엔드포인트를 제공한다.
- * 작성 날짜 : 2025/12/17
- * 작성자 : 시스템
- */
 @RestController
 @RequestMapping("/notifications")
 @RequiredArgsConstructor
@@ -22,16 +17,8 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
-    /**
-     * 함수 이름 : getNotifications
-     * 기능 : 페이지네이션, 필터링, 정렬을 지원하는 알림 목록을 조회한다.
-     * 매개변수 : page - 페이지 번호 (1-based), size - 페이지 크기, from - 시작 날짜, to - 종료 날짜, level - 위험도 필터 (ALL|DANGER|WARNING|SAFE), keyword - 검색 키워드, sort - 정렬 기준
-     * 반환값 : NotificationPageResponse - 페이지네이션된 알림 목록
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
     @GetMapping
-    public NotificationPageResponse getNotifications(
+    public ApiResponse<NotificationPageResponse> getNotifications(
             @RequestParam(name = "page", required = false) Integer page,
             @RequestParam(name = "size", required = false) Integer size,
             @RequestParam(name = "from", required = false) String from,
@@ -42,39 +29,28 @@ public class NotificationController {
             HttpSession session
     ) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
-        return notificationService.getNotifications(ownerKey, page, size, from, to, level, keyword, sort);
+        return ApiResponse.ok(
+                notificationService.getNotifications(ownerKey, page, size, from, to, level, keyword, sort));
     }
 
-    /**
-     * 함수 이름 : getNotification
-     * 기능 : ID로 단일 알림의 상세 정보를 조회한다.
-     * 매개변수 : id - 알림 ID
-     * 반환값 : NotificationResponse - 알림 상세 정보
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
     @GetMapping("/{id}")
-    public NotificationResponse getNotification(@PathVariable("id") long id, HttpSession session) {
+    public ApiResponse<NotificationResponse> getNotification(
+            @PathVariable("id") long id, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
-        return notificationService.getNotificationById(ownerKey, id);
+        return ApiResponse.ok(notificationService.getNotificationById(ownerKey, id));
     }
 
-    /**
-     * 함수 이름 : getStats
-     * 기능 : 현재 사용자의 ai_label별 알림 카운트 통계를 반환한다.
-     * 반환값 : Map - {counter: {total, DANGER, WARNING, SAFE, UNKNOWN}}
-     */
     @GetMapping("/stats")
-    public Map<String, Object> getStats(HttpSession session) {
+    public ApiResponse<Map<String, Object>> getStats(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
-        return notificationService.getStats(ownerKey);
+        return ApiResponse.ok(notificationService.getStats(ownerKey));
     }
 
     @PatchMapping("/{id}/false-positive")
-    public ResponseEntity<Void> markFalsePositive(@PathVariable("id") long id, HttpSession session) {
+    public ApiResponse<Void> markFalsePositive(
+            @PathVariable("id") long id, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         notificationService.markFalsePositive(ownerKey, id);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.ok();
     }
 }
-

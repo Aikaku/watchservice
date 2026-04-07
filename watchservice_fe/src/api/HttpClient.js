@@ -37,7 +37,14 @@ async function request(path, options = {}) {
   }
 
   const ct = (res.headers.get('content-type') || '').toLowerCase();
-  if (ct.includes('application/json')) return res.json();
+  if (ct.includes('application/json')) {
+    const json = await res.json();
+    // ApiResponse 래퍼 자동 unwrap: { success, data, message } → data
+    if (json !== null && typeof json === 'object' && 'success' in json && 'data' in json) {
+      return json.data;
+    }
+    return json;
+  }
   return res.text();
 }
 

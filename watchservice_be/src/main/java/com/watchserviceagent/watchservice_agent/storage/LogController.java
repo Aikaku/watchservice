@@ -1,5 +1,6 @@
 package com.watchserviceagent.watchservice_agent.storage;
 
+import com.watchserviceagent.watchservice_agent.common.ApiResponse;
 import com.watchserviceagent.watchservice_agent.common.util.OwnerKeyUtil;
 import com.watchserviceagent.watchservice_agent.storage.dto.*;
 import jakarta.servlet.http.HttpSession;
@@ -12,12 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 클래스 이름 : LogController
- * 기능 : 로그 조회, 삭제, 내보내기 등의 REST API 엔드포인트를 제공한다.
- * 작성 날짜 : 2025/12/17
- * 작성자 : 시스템
- */
 @RestController
 @RequestMapping("/logs")
 @RequiredArgsConstructor
@@ -26,36 +21,20 @@ public class LogController {
 
     private final LogService logService;
 
-    /**
-     * 함수 이름 : getRecentLogs
-     * 기능 : 최근 로그를 지정된 개수만큼 조회한다.
-     * 매개변수 : limit - 조회할 로그 개수 (기본값: 50, 최대: 1000)
-     * 반환값 : LogResponse 리스트
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
     @GetMapping("/recent")
-    public List<LogResponse> getRecentLogs(@RequestParam(name = "limit", defaultValue = "50") int limit,
-                                           HttpSession session) {
+    public ApiResponse<List<LogResponse>> getRecentLogs(
+            @RequestParam(name = "limit", defaultValue = "50") int limit,
+            HttpSession session) {
         if (limit <= 0) limit = 50;
         else if (limit > 1000) limit = 1000;
-
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         List<LogResponse> logs = logService.getRecentLogs(ownerKey, limit);
         log.info("[LogController] GET /logs/recent limit={} -> {}", limit, logs.size());
-        return logs;
+        return ApiResponse.ok(logs);
     }
 
-    /**
-     * 함수 이름 : getLogs
-     * 기능 : 페이지네이션, 필터링, 정렬을 지원하는 로그 목록을 조회한다.
-     * 매개변수 : page - 페이지 번호, size - 페이지 크기, from - 시작 날짜, to - 종료 날짜, keyword - 검색 키워드, aiLabel - AI 라벨 필터, eventType - 이벤트 타입 필터, sort - 정렬 기준
-     * 반환값 : LogPageResponse - 페이지네이션된 로그 목록
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
     @GetMapping
-    public LogPageResponse getLogs(
+    public ApiResponse<LogPageResponse> getLogs(
             @RequestParam(name = "page", required = false) Integer page,
             @RequestParam(name = "size", required = false) Integer size,
             @RequestParam(name = "from", required = false) String from,
@@ -67,61 +46,32 @@ public class LogController {
             HttpSession session
     ) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
-        return logService.getLogs(ownerKey, page, size, from, to, keyword, aiLabel, eventType, sort);
+        return ApiResponse.ok(
+                logService.getLogs(ownerKey, page, size, from, to, keyword, aiLabel, eventType, sort));
     }
 
-    /**
-     * 함수 이름 : getLog
-     * 기능 : ID로 단일 로그의 상세 정보를 조회한다.
-     * 매개변수 : id - 로그 ID
-     * 반환값 : LogResponse - 로그 상세 정보
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
     @GetMapping("/{id}")
-    public LogResponse getLog(@PathVariable("id") long id, HttpSession session) {
+    public ApiResponse<LogResponse> getLog(@PathVariable("id") long id, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
-        return logService.getLogById(ownerKey, id);
+        return ApiResponse.ok(logService.getLogById(ownerKey, id));
     }
 
-    /**
-     * 함수 이름 : deleteLog
-     * 기능 : 단일 로그를 삭제한다.
-     * 매개변수 : id - 삭제할 로그 ID
-     * 반환값 : ResponseEntity<Void> - 204 No Content
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLog(@PathVariable("id") long id, HttpSession session) {
+    public ApiResponse<Void> deleteLog(@PathVariable("id") long id, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         logService.deleteOne(ownerKey, id);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.ok();
     }
 
-    /**
-     * 함수 이름 : deleteLogs
-     * 기능 : 여러 로그를 일괄 삭제한다.
-     * 매개변수 : req - 삭제할 로그 ID 리스트를 포함한 요청 객체
-     * 반환값 : LogDeleteResponse - 삭제된 로그 개수
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
     @PostMapping("/delete")
-    public LogDeleteResponse deleteLogs(@RequestBody LogDeleteRequest req, HttpSession session) {
+    public ApiResponse<LogDeleteResponse> deleteLogs(
+            @RequestBody LogDeleteRequest req, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
         int deleted = logService.deleteMany(ownerKey, req.getIds());
-        return LogDeleteResponse.builder().deletedCount(deleted).build();
+        return ApiResponse.ok(LogDeleteResponse.builder().deletedCount(deleted).build());
     }
 
-    /**
-     * 함수 이름 : exportLogs
-     * 기능 : 로그를 CSV 또는 JSON 형식으로 내보낸다.
-     * 매개변수 : req - 내보내기 요청 (형식, 필터 조건 포함)
-     * 반환값 : ResponseEntity - CSV 또는 JSON 형식의 로그 데이터
-     * 작성 날짜 : 2025/12/17
-     * 작성자 : 시스템
-     */
+    /** exportLogs: CSV/JSON 혼용 응답이므로 ApiResponse 래퍼 미적용 */
     @PostMapping("/export")
     public ResponseEntity<?> exportLogs(@RequestBody LogExportRequest req, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -131,25 +81,24 @@ public class LogController {
             return ResponseEntity.ok(result.getJsonItems());
         }
 
-        String csv = result.getCsvText();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8")
-                .body(csv);
+                .body(result.getCsvText());
     }
 
     @GetMapping("/top-files")
-    public List<Map<String, Object>> getTopFiles(
+    public ApiResponse<List<Map<String, Object>>> getTopFiles(
             @RequestParam(name = "limit", defaultValue = "10") int limit,
             HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
-        return logService.getTopFiles(ownerKey, limit);
+        return ApiResponse.ok(logService.getTopFiles(ownerKey, limit));
     }
 
     @GetMapping("/extension-stats")
-    public List<Map<String, Object>> getExtensionStats(
+    public ApiResponse<List<Map<String, Object>>> getExtensionStats(
             @RequestParam(name = "limit", defaultValue = "20") int limit,
             HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
-        return logService.getExtensionStats(ownerKey, limit);
+        return ApiResponse.ok(logService.getExtensionStats(ownerKey, limit));
     }
 }
