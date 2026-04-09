@@ -30,6 +30,7 @@ import SettingResetPage from './pages/settings/SettingResetPage';
 import SettingUpdatePage from './pages/settings/SettingUpdatePage';
 import SettingFeedbackPage from './pages/settings/SettingFeedbackPage';
 import SettingGuidePage from './pages/settings/SettingGuidePage';
+import SettingEmailPage from './pages/settings/SettingEmailPage';
 
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminMainPage from './pages/admin/AdminMainPage';
@@ -87,6 +88,7 @@ function App() {
           <Route path="/settings/update" element={<UserProtectedRoute><SettingUpdatePage /></UserProtectedRoute>} />
           <Route path="/settings/feedback" element={<UserProtectedRoute><SettingFeedbackPage /></UserProtectedRoute>} />
           <Route path="/settings/guide" element={<UserProtectedRoute><SettingGuidePage /></UserProtectedRoute>} />
+          <Route path="/settings/email" element={<UserProtectedRoute><SettingEmailPage /></UserProtectedRoute>} />
 
           {/* 관리자 (세션 인증 필요) */}
           <Route path="/admin/login" element={<AdminLoginPage />} />

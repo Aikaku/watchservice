@@ -21,11 +21,11 @@ function SettingHomePage() {
   const items = [
     { title: '감시 폴더', desc: '감시 대상 폴더 추가/삭제', path: '/settings/folders' },
     { title: '예외 관리', desc: '화이트리스트(감시 제외) 규칙', path: '/settings/exceptions' },
-    // 예: SettingHomePage.jsx 내부 items 중
-    { title: '알림 방식', desc: '팝업/소리 설정(백엔드 미구현 가능)', path: '/settings/notify' },
-    { title: '초기화', desc: '설정/캐시 초기화(백엔드 미구현 가능)', path: '/settings/reset' },
-    { title: '업데이트', desc: '버전/업데이트 확인(백엔드 미구현 가능)', path: '/settings/update' },
-    { title: '문의/피드백', desc: '버그·문의 제출(백엔드 미구현 가능)', path: '/settings/feedback' },
+    { title: '알림 방식', desc: '팝업/소리 설정', path: '/settings/notify' },
+    { title: '이메일 알림', desc: 'DANGER 탐지 시 이메일 경보', path: '/settings/email' },
+    { title: '초기화', desc: '설정/캐시 초기화', path: '/settings/reset' },
+    { title: '업데이트', desc: '버전/업데이트 확인', path: '/settings/update' },
+    { title: '문의/피드백', desc: '버그·문의 제출', path: '/settings/feedback' },
     { title: '사용 가이드', desc: 'WatchService 사용 방법 안내', path: '/settings/guide' },
   ];
 

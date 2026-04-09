@@ -71,3 +71,18 @@ export function resetSettings() {
 export function sendFeedback(payload) {
   return post('/api/feedback', payload);
 }
+
+/** =========================
+ * Alert Email
+ * ========================= */
+export function fetchAlertEmail() {
+  return get('/settings/alert-email');
+}
+
+export function updateAlertEmail(email) {
+  return put('/settings/alert-email', { email });
+}
+
+export function sendTestEmail(email) {
+  return post('/settings/alert-email/test', { email });
+}
