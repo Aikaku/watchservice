@@ -1,8 +1,12 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, shell, screen } = require('electron');
+const { app, BrowserWindow, Tray, Menu, nativeImage, shell, screen, ipcMain } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
+
+// 업데이트 확인용 GitHub 저장소 (실제 저장소 경로로 변경)
+const GITHUB_REPO = process.env.GITHUB_REPO || 'your-org/watchservice-agent';
 
 // ──────────────────────────────────────────────
 // 설정
@@ -220,6 +224,48 @@ function createTray() {
     }
   });
 }
+
+// ──────────────────────────────────────────────
+// IPC 핸들러
+// ──────────────────────────────────────────────
+ipcMain.handle('get-app-version', () => app.getVersion());
+
+ipcMain.handle('check-for-updates', () => {
+  return new Promise((resolve) => {
+    const currentVersion = app.getVersion();
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`;
+
+    const req = https.get(url, { headers: { 'User-Agent': 'WatchService-Agent' } }, (res) => {
+      let body = '';
+      res.on('data', (chunk) => { body += chunk; });
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(body);
+          if (json.message === 'Not Found' || !json.tag_name) {
+            resolve({ currentVersion, latestVersion: null, downloadUrl: null, hasUpdate: false, error: '릴리즈 없음' });
+            return;
+          }
+          const latestVersion = json.tag_name.replace(/^v/, '');
+          resolve({
+            currentVersion,
+            latestVersion,
+            downloadUrl: json.html_url || null,
+            hasUpdate: latestVersion !== currentVersion,
+          });
+        } catch {
+          resolve({ currentVersion, latestVersion: null, downloadUrl: null, hasUpdate: false, error: '응답 파싱 실패' });
+        }
+      });
+    });
+    req.on('error', () => {
+      resolve({ currentVersion, latestVersion: null, downloadUrl: null, hasUpdate: false, error: '네트워크 오류' });
+    });
+    req.setTimeout(8000, () => {
+      req.destroy();
+      resolve({ currentVersion, latestVersion: null, downloadUrl: null, hasUpdate: false, error: '타임아웃' });
+    });
+  });
+});
 
 // ──────────────────────────────────────────────
 // 앱 시작
