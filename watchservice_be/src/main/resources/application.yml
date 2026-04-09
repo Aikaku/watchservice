@@ -5,19 +5,34 @@ spring:
   main:
     headless: true
 
+  datasource:
+    url: jdbc:sqlite:log.db          # ✅ 프로젝트 루트에 log.db 생성/사용
+    driver-class-name: org.sqlite.JDBC
+    username: ""                     # SQLite는 보통 계정/비번 없음
+    password: ""
+
+  sql:
+    init:
+      mode: never                    # 스키마 자동 초기화 안 씀 (우리가 코드로 CREATE TABLE 함)
+
+  # 이메일 알림 (DANGER 탐지 시 발송)
+  # SMTP_USERNAME/SMTP_PASSWORD 환경변수로 설정. 미설정 시 이메일 알림 비활성화.
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 server:
   servlet:
     session:
       timeout: 30m   # 30분 비활동 시 세션 만료
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health   # health 엔드포인트만 외부 노출
-  endpoint:
-    health:
-      show-details: never  # 내부 상세 정보 숨김 (운영 보안)
 
 # HTTPS 설정 (실서버 배포 시 아래 주석 해제 후 인증서 경로/비밀번호 지정)
 # 방법 1) Spring Boot 내장 SSL (Let's Encrypt p12 변환 후):
@@ -30,15 +45,14 @@ management:
 #
 # 방법 2) Nginx 리버스 프록시 (권장) — Spring Boot는 8080 유지, Nginx에서 443 → 8080 포워딩
 
-  datasource:
-    url: jdbc:sqlite:log.db          # ✅ 프로젝트 루트에 log.db 생성/사용
-    driver-class-name: org.sqlite.JDBC
-    username: ""                     # SQLite는 보통 계정/비번 없음
-    password: ""
-
-  sql:
-    init:
-      mode: never                    # 스키마 자동 초기화 안 씀 (우리가 코드로 CREATE TABLE 함)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health   # health 엔드포인트만 외부 노출
+  endpoint:
+    health:
+      show-details: never  # 내부 상세 정보 숨김 (운영 보안)
 
 # 로그 설정은 logback-spring.xml 참조 (파일 롤링 포함)
 # SQL 상세 로그 보려면 --spring.profiles.active=dev 로 실행
@@ -78,22 +92,8 @@ user:
   auth:
     enabled: ${USER_AUTH_ENABLED:false}
   # 일반 사용자 접속 비밀번호 (USER_AUTH_ENABLED=true 일 때 필수)
+  # BCrypt 해시로 설정하면 BCrypt 검증, 평문이면 평문 비교 (경고 로그 출력)
   password: ${USER_PASSWORD:}
-
-# 이메일 알림 (DANGER 탐지 시 발송)
-# SMTP_USERNAME/SMTP_PASSWORD 환경변수로 설정. 미설정 시 이메일 알림 비활성화.
-spring:
-  mail:
-    host: ${SMTP_HOST:smtp.gmail.com}
-    port: ${SMTP_PORT:587}
-    username: ${SMTP_USERNAME:}
-    password: ${SMTP_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
 
 watchservice:
   analytics:

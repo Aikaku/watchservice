@@ -49,7 +49,7 @@ public class AdminAuthInterceptor implements HandlerInterceptor {
     private void sendJsonUnauthorized(HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"error\":\"admin_auth_required\"}");
+        response.getWriter().write("{\"success\":false,\"data\":null,\"message\":\"admin_auth_required\"}");
     }
 }
 
