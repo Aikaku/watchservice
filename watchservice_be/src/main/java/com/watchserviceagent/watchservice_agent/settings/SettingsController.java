@@ -131,6 +131,26 @@ public class SettingsController {
         return ApiResponse.ok();
     }
 
+    // ===== 감시 스케줄 =====
+
+    @GetMapping("/schedule")
+    public ApiResponse<Map<String, Object>> getWatchSchedule(HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        String json = settingsService.getWatchSchedule(ownerKey);
+        log.info("[SettingsController] GET /settings/schedule ownerKey={}", ownerKey);
+        return ApiResponse.ok(Map.of("schedule", json));
+    }
+
+    @PutMapping("/schedule")
+    public ApiResponse<Void> updateWatchSchedule(
+            @RequestBody Map<String, String> body, HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        String json = body.getOrDefault("schedule", "{}");
+        settingsService.updateWatchSchedule(ownerKey, json);
+        log.info("[SettingsController] PUT /settings/schedule ownerKey={}", ownerKey);
+        return ApiResponse.ok();
+    }
+
     @PostMapping("/alert-email/test")
     public ApiResponse<Void> sendTestEmail(@RequestBody Map<String, String> body, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);

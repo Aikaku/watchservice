@@ -366,4 +366,49 @@ public class WatcherService {
     public boolean isAnyRunning() {
         return userWatcherStates.values().stream().anyMatch(s -> s.running);
     }
+
+    /**
+     * 함수 이름 : pauseWatcher
+     * 기능 : 해당 사용자의 감시를 일시 중단한다. 재개 시 사용할 watchedRoots는 별도 맵에 보존된다.
+     * 매개변수 : ownerKey - 사용자 키
+     * 작성 날짜 : 2026/04/24
+     */
+    public synchronized void pauseWatcher(String ownerKey) {
+        UserWatcherState state = userWatcherStates.get(ownerKey);
+        if (state == null || !state.running) return;
+
+        // 재개용 루트 경로를 별도 보존
+        List<String> roots = state.watchedRoots.stream()
+                .map(p -> p.toAbsolutePath().toString())
+                .collect(java.util.stream.Collectors.toList());
+        pausedRoots.put(ownerKey, roots);
+
+        stopWatching(ownerKey);
+        log.info("[WatcherService] 감시 일시 중단: ownerKey={}", ownerKey);
+    }
+
+    /**
+     * 함수 이름 : resumeWatcher
+     * 기능 : 일시 중단된 감시를 재개한다. pauseWatcher() 호출 시 보존한 경로로 재시작한다.
+     * 매개변수 : ownerKey - 사용자 키
+     * 작성 날짜 : 2026/04/24
+     */
+    public synchronized void resumeWatcher(String ownerKey) {
+        if (isRunning(ownerKey)) return;
+
+        List<String> roots = pausedRoots.get(ownerKey);
+        if (roots == null || roots.isEmpty()) {
+            log.info("[WatcherService] resumeWatcher: 저장된 경로 없음. ownerKey={}", ownerKey);
+            return;
+        }
+        try {
+            startWatchingMultiple(ownerKey, roots);
+            log.info("[WatcherService] 감시 재개: ownerKey={}, roots={}", ownerKey, roots);
+        } catch (Exception e) {
+            log.error("[WatcherService] 감시 재개 실패: ownerKey={}", ownerKey, e);
+        }
+    }
+
+    /** pause 시 보존되는 사용자별 루트 경로 목록 */
+    private final Map<String, List<String>> pausedRoots = new ConcurrentHashMap<>();
 }

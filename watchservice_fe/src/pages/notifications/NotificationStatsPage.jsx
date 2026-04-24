@@ -7,6 +7,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { fetchAlertStats } from '../../api/NotificationsApi';
 import NotificationStatusChart from '../../components/notifications/NotificationStatusChart';
+import { buildReportUrl } from '../../api/SettingApi';
 
 /**
  * 함수 이름 : NotificationStatsPage
@@ -22,6 +23,10 @@ function NotificationStatsPage() {
 
   // 간단 통계 (카운터)
   const [counter, setCounter] = useState({ total: 0, DANGER: 0, WARNING: 0, SAFE: 0, UNKNOWN: 0 });
+
+  // PDF 리포트 기간 필터
+  const [reportFrom, setReportFrom] = useState('');
+  const [reportTo, setReportTo] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -55,6 +60,42 @@ function NotificationStatsPage() {
       {error && <p style={{ color: 'red' }}>통계를 불러오는 중 오류: {error.message}</p>}
 
       {!loading && !error && <NotificationStatusChart stats={stats} />}
+
+      {/* PDF 리포트 다운로드 */}
+      <div style={{ marginTop: 32, padding: 20, background: '#1f2937', borderRadius: 10 }}>
+        <h2 style={{ marginBottom: 12, fontSize: 15 }}>PDF 리포트 내보내기</h2>
+        <p style={{ fontSize: 12, color: '#9ca3af', marginBottom: 14 }}>
+          기간을 선택하고 다운로드 버튼을 클릭하면 탐지 내역이 PDF로 저장됩니다. 기간을 비우면 전체 기간이 대상입니다.
+        </p>
+        <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <label style={{ fontSize: 13 }}>
+            시작일
+            <input
+              type="date"
+              value={reportFrom}
+              onChange={(e) => setReportFrom(e.target.value)}
+              style={{ marginLeft: 6 }}
+            />
+          </label>
+          <label style={{ fontSize: 13 }}>
+            종료일
+            <input
+              type="date"
+              value={reportTo}
+              onChange={(e) => setReportTo(e.target.value)}
+              style={{ marginLeft: 6 }}
+            />
+          </label>
+          <a
+            href={buildReportUrl({ from: reportFrom, to: reportTo })}
+            download
+            className="btn"
+            style={{ textDecoration: 'none' }}
+          >
+            PDF 다운로드
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

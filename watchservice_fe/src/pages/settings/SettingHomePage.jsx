@@ -23,6 +23,8 @@ function SettingHomePage() {
     { title: '예외 관리', desc: '화이트리스트(감시 제외) 규칙', path: '/settings/exceptions' },
     { title: '알림 방식', desc: '팝업/소리 설정', path: '/settings/notify' },
     { title: '이메일 알림', desc: 'DANGER 탐지 시 이메일 경보', path: '/settings/email' },
+    { title: '감시 스케줄', desc: '요일·시간대별 자동 활성화', path: '/settings/schedule' },
+    { title: '파일 권한 감사', desc: 'others 쓰기·실행 권한 파일 탐지', path: '/settings/audit' },
     { title: '초기화', desc: '설정/캐시 초기화', path: '/settings/reset' },
     { title: '업데이트', desc: '버전/업데이트 확인', path: '/settings/update' },
     { title: '문의/피드백', desc: '버그·문의 제출', path: '/settings/feedback' },

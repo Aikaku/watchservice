@@ -73,6 +73,40 @@ export function sendFeedback(payload) {
 }
 
 /** =========================
+ * File Permission Audit
+ * ========================= */
+export function fetchAuditResults() {
+  return get('/api/audit');
+}
+
+export function runAudit() {
+  return post('/api/audit/run', {});
+}
+
+/** =========================
+ * Watch Schedule
+ * ========================= */
+export function fetchWatchSchedule() {
+  return get('/settings/schedule');
+}
+
+export function updateWatchSchedule(schedule) {
+  return put('/settings/schedule', { schedule: JSON.stringify(schedule) });
+}
+
+/** =========================
+ * Report
+ * ========================= */
+export function buildReportUrl({ from, to } = {}) {
+  const base = (process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '');
+  const sp = new URLSearchParams();
+  if (from) sp.set('from', from);
+  if (to)   sp.set('to',   to);
+  const qs = sp.toString();
+  return `${base}/api/report${qs ? '?' + qs : ''}`;
+}
+
+/** =========================
  * Alert Email
  * ========================= */
 export function fetchAlertEmail() {

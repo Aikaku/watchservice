@@ -152,12 +152,23 @@ function NotificationPage() {
               key={item.id}
               className="notification-item"
               onClick={() => handleClickItem(item)}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer', opacity: item.falsePositive ? 0.55 : 1 }}
             >
               <div className="notification-item-main">
-                <span className="notification-title">
+                <span
+                  className="notification-title"
+                  style={item.falsePositive ? { textDecoration: 'line-through' } : {}}
+                >
                   [{item.aiLabel || 'UNKNOWN'}] {item.topFamily || '분류 중'}
                 </span>
+                {item.falsePositive && (
+                  <span style={{
+                    marginLeft: 8, fontSize: 11, background: '#374151',
+                    color: '#9ca3af', padding: '2px 6px', borderRadius: 4, flexShrink: 0,
+                  }}>
+                    오탐
+                  </span>
+                )}
                 <span className="notification-time">{item.createdAt}</span>
               </div>
 

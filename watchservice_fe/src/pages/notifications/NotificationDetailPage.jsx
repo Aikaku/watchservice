@@ -7,6 +7,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { fetchAlertDetail, reportFalsePositive } from '../../api/NotificationsApi';
+import { createExceptionRule } from '../../api/SettingApi';
 import FamilyInfoModal from '../../components/notifications/FamilyInfoModal';
 
 /**
@@ -30,6 +31,7 @@ function NotificationDetailPage() {
   const [fpDone, setFpDone] = useState(false);
   const [fpLoading, setFpLoading] = useState(false);
   const [fpError, setFpError] = useState(null);
+  const [fpAutoRuleCount, setFpAutoRuleCount] = useState(0);
   const [familyModalName, setFamilyModalName] = useState(null);
 
   useEffect(() => {
@@ -143,6 +145,18 @@ function NotificationDetailPage() {
                 try {
                   await reportFalsePositive(id);
                   setFpDone(true);
+
+                  // 영향 받은 경로를 예외 규칙에 자동 등록 (최대 10개)
+                  const paths = (notification.affectedPaths || []).slice(0, 10);
+                  if (paths.length > 0) {
+                    const results = await Promise.allSettled(
+                      paths.map((p) =>
+                        createExceptionRule({ type: 'PATH', pattern: p, memo: '오탐 신고 자동 등록' })
+                      )
+                    );
+                    const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+                    setFpAutoRuleCount(succeeded);
+                  }
                 } catch (e) {
                   setFpError('오탐 신고 실패: ' + e.message);
                 } finally {
@@ -154,6 +168,11 @@ function NotificationDetailPage() {
             </button>
           </div>
           {fpError && <p style={{ color: '#f87171', marginTop: 8 }}>{fpError}</p>}
+          {fpDone && fpAutoRuleCount > 0 && (
+            <p style={{ color: '#4ade80', marginTop: 8, fontSize: 13 }}>
+              {fpAutoRuleCount}개 경로가 예외 규칙에 자동 등록되었습니다.
+            </p>
+          )}
         </>
       )}
 

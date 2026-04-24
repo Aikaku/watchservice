@@ -87,6 +87,20 @@ public class SettingsService {
         log.info("[SettingsService] 예외 규칙 삭제: id={}", id);
     }
 
+    // ===== 감시 스케줄 =====
+
+    private static final String KEY_WATCH_SCHEDULE = "watch_schedule";
+
+    public String getWatchSchedule(String ownerKey) {
+        String v = settingsRepository.getAppSetting(ownerKey, KEY_WATCH_SCHEDULE);
+        return v == null ? "{\"enabled\":false,\"days\":[1,2,3,4,5],\"startTime\":\"09:00\",\"endTime\":\"18:00\"}" : v;
+    }
+
+    public void updateWatchSchedule(String ownerKey, String scheduleJson) {
+        settingsRepository.setAppSetting(ownerKey, KEY_WATCH_SCHEDULE, scheduleJson);
+        log.info("[SettingsService] 감시 스케줄 업데이트: ownerKey={}", ownerKey);
+    }
+
     // ===== 이메일 알림 =====
 
     private static final String KEY_ALERT_EMAIL = "alert_email";

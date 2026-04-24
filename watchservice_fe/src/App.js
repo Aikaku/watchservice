@@ -31,6 +31,8 @@ import SettingUpdatePage from './pages/settings/SettingUpdatePage';
 import SettingFeedbackPage from './pages/settings/SettingFeedbackPage';
 import SettingGuidePage from './pages/settings/SettingGuidePage';
 import SettingEmailPage from './pages/settings/SettingEmailPage';
+import SettingSchedulePage from './pages/settings/SettingSchedulePage';
+import SettingAuditPage from './pages/settings/SettingAuditPage';
 
 import AdminLoginPage from './pages/admin/AdminLoginPage';
 import AdminMainPage from './pages/admin/AdminMainPage';
@@ -89,6 +91,8 @@ function App() {
           <Route path="/settings/feedback" element={<UserProtectedRoute><SettingFeedbackPage /></UserProtectedRoute>} />
           <Route path="/settings/guide" element={<UserProtectedRoute><SettingGuidePage /></UserProtectedRoute>} />
           <Route path="/settings/email" element={<UserProtectedRoute><SettingEmailPage /></UserProtectedRoute>} />
+          <Route path="/settings/schedule" element={<UserProtectedRoute><SettingSchedulePage /></UserProtectedRoute>} />
+          <Route path="/settings/audit" element={<UserProtectedRoute><SettingAuditPage /></UserProtectedRoute>} />
 
           {/* 관리자 (세션 인증 필요) */}
           <Route path="/admin/login" element={<AdminLoginPage />} />
