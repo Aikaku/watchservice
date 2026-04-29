@@ -14,14 +14,21 @@ JRE_OUT="$SCRIPT_DIR/watchservice_electron/jre"
 
 # ── JAVA_HOME 결정 ──────────────────────────────────────────
 if [ -z "$JAVA_HOME" ]; then
-  JAVA_BIN=$(which java 2>/dev/null || true)
-  if [ -z "$JAVA_BIN" ]; then
-    echo "[ERROR] Java가 설치되어 있지 않습니다."
-    exit 1
+  # macOS: /usr/libexec/java_home으로 JDK 위치 자동 탐색 (JRE가 아닌 JDK)
+  if [ "$(uname)" = "Darwin" ] && [ -x "/usr/libexec/java_home" ]; then
+    JAVA_HOME=$(/usr/libexec/java_home -v 17 2>/dev/null \
+      || /usr/libexec/java_home 2>/dev/null || true)
   fi
-  # symlink 해소
-  JAVA_BIN=$(readlink -f "$JAVA_BIN" 2>/dev/null || realpath "$JAVA_BIN" 2>/dev/null || echo "$JAVA_BIN")
-  JAVA_HOME="$(dirname "$(dirname "$JAVA_BIN")")"
+  # fallback: which java 경로에서 추정 (Linux 등)
+  if [ -z "$JAVA_HOME" ]; then
+    JAVA_BIN=$(which java 2>/dev/null || true)
+    if [ -z "$JAVA_BIN" ]; then
+      echo "[ERROR] Java가 설치되어 있지 않습니다."
+      exit 1
+    fi
+    JAVA_BIN=$(readlink -f "$JAVA_BIN" 2>/dev/null || realpath "$JAVA_BIN" 2>/dev/null || echo "$JAVA_BIN")
+    JAVA_HOME="$(dirname "$(dirname "$JAVA_BIN")")"
+  fi
 fi
 
 JLINK="$JAVA_HOME/bin/jlink"

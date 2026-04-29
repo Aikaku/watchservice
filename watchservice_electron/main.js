@@ -77,12 +77,18 @@ function startSpringBoot() {
   const jarPath = getJarPath();
   const javaPath = getJavaPath();
 
+  // log.db, config/ 등 데이터 파일을 사용자 앱 데이터 폴더에 저장
+  const dataDir = app.getPath('userData');
+  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+
   console.log('[Electron] Spring Boot 시작:', jarPath);
   console.log('[Electron] Java 경로:', javaPath);
+  console.log('[Electron] 데이터 디렉토리:', dataDir);
 
   springProcess = spawn(javaPath, ['-jar', jarPath], {
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false,
+    cwd: dataDir,
   });
 
   springProcess.stdout.on('data', (data) => {

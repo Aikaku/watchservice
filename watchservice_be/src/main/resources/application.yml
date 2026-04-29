@@ -59,9 +59,9 @@ management:
 
 ai:
   analyze:
-    url: ${AI_ANALYZE_URL:http://localhost:8001/api/analyze}
+    url: ${AI_ANALYZE_URL:https://web-production-728bf.up.railway.app/api/analyze}
   family:
-    url: ${AI_FAMILY_URL:http://localhost:8001/predict}
+    url: ${AI_FAMILY_URL:https://web-production-728bf.up.railway.app/predict}
   connect-timeout-ms: ${AI_CONNECT_TIMEOUT_MS:5000}
   read-timeout-ms: ${AI_READ_TIMEOUT_MS:15000}
 
@@ -84,7 +84,7 @@ admin:
   # BCrypt 해시 생성: new BCryptPasswordEncoder().encode("yourPassword")
   # 예: ADMIN_PASSWORD=$2a$10$xxx...
   # ⚠ 기본값(123456789)을 그대로 두면 관리자 로그인이 차단됩니다.
-  password: ${ADMIN_PASSWORD:123456789}
+  password: ${ADMIN_PASSWORD:$2b$12$jw2C0RVKMgk9qj.1v6nm0O81arkMq4Vbqst4MwR0I/e1GgMOCsOMC}
 
 user:
   # 일반 사용자 인증 활성화 여부 (기본: 비활성)
