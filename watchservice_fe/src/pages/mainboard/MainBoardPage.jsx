@@ -16,6 +16,7 @@ import ProtectionStatusBadge from '../../components/protection/ProtectionStatusB
 import ScanControlPanel from '../../components/protection/ScanControlPanel';
 import RecentEventsPanel from '../../components/protection/RecentEventsPanel';
 import ScanResultModal from '../../components/scan/ScanResultModal';
+import FolderPickerModal from '../../components/folders/FolderPickerModal';
 
 /**
  * 함수 이름 : MainBoardPage
@@ -48,7 +49,8 @@ function MainBoardPage() {
   const [scanResult, setScanResult] = useState(null);
 
   /** 감시 폴더 훅 */
-  const { folders, promptAndAddFolder, removeFolder } = useWatchedFolders();
+  const { folders, addFolder, removeFolder } = useWatchedFolders();
+  const [showFolderPicker, setShowFolderPicker] = useState(false);
 
   /** 최근 이벤트 훅 (5건) */
   const { logs: recentLogs, loading: logsLoading, error: logsError } = useLogs(5);
@@ -300,7 +302,7 @@ function MainBoardPage() {
    * 작성 날짜 : 2025/12/17
    * 작성자 : 시스템
    */
-  const handleAddFolder = () => promptAndAddFolder();
+  const handleAddFolder = () => setShowFolderPicker(true);
 
   /**
    * 함수 이름 : handleRemoveFolder
@@ -316,6 +318,12 @@ function MainBoardPage() {
     <div className="mainboard-root">
       {scanResult && (
         <ScanResultModal result={scanResult} onClose={() => setScanResult(null)} />
+      )}
+      {showFolderPicker && (
+        <FolderPickerModal
+          onSelect={async (path) => { setShowFolderPicker(false); await addFolder(path, ''); }}
+          onClose={() => setShowFolderPicker(false)}
+        />
       )}
 
       <header className="mainboard-header">

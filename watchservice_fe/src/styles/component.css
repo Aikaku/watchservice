@@ -125,6 +125,7 @@
 input[type="text"],
 input[type="date"],
 input[type="email"],
+input[type="time"],
 textarea,
 select {
   padding: 10px 14px;
@@ -140,6 +141,7 @@ select {
 input[type="text"]:focus,
 input[type="date"]:focus,
 input[type="email"]:focus,
+input[type="time"]:focus,
 textarea:focus,
 select:focus {
   outline: none;

@@ -30,12 +30,17 @@ public class WebConfig implements WebMvcConfigurer {
         log.info("[WebConfig] CORS allowedOrigins={}", (Object) allowedOrigins);
     }
 
-    /** React SPA 라우팅: /api/**, /actuator/** 외 모든 경로를 index.html로 포워딩 */
+    /** React SPA 라우팅: /api/**, /actuator/**, /static/** 외 경로를 index.html로 포워딩 */
     @Override
     public void addViewControllers(@NonNull ViewControllerRegistry registry) {
-        // React Router가 처리하는 클라이언트 사이드 경로들을 index.html로 포워딩
+        // 단일 세그먼트 (점 없는 경로): /notifications, /logs 등
         registry.addViewController("/{path:[^\\.]*}").setViewName("forward:/index.html");
-        registry.addViewController("/{path:[^\\.]*}/**").setViewName("forward:/index.html");
+        // 멀티 세그먼트 React 라우트 명시적 처리 (/static/** 오염 방지)
+        registry.addViewController("/notifications/**").setViewName("forward:/index.html");
+        registry.addViewController("/logs/**").setViewName("forward:/index.html");
+        registry.addViewController("/settings/**").setViewName("forward:/index.html");
+        registry.addViewController("/notice/**").setViewName("forward:/index.html");
+        registry.addViewController("/admin/**").setViewName("forward:/index.html");
     }
 
     /** 정적 리소스(JS, CSS, 이미지 등)는 static 폴더에서 직접 서빙 */
