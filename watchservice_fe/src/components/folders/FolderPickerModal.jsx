@@ -116,7 +116,7 @@ function FolderPickerModal({ onSelect, onClose }) {
         </div>
 
         {/* 상위 폴더 버튼 */}
-        {parentPath && (
+        {parentPath !== null && (
           <div style={{ padding: '6px 16px', borderBottom: '1px solid #2d3748' }}>
             <button
               onClick={() => navigate(parentPath)}
@@ -133,7 +133,7 @@ function FolderPickerModal({ onSelect, onClose }) {
                 gap: 6,
               }}
             >
-              ← 상위 폴더
+              ← {parentPath === '' ? '드라이브 목록' : '상위 폴더'}
             </button>
           </div>
         )}

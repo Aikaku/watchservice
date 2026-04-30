@@ -162,9 +162,11 @@ public class FileCollectorService {
      */
     private String extractExtension(String pathStr) {
         if (pathStr == null) return null;
-        int lastDot = pathStr.lastIndexOf('.');
-        if (lastDot < 0 || lastDot == pathStr.length() - 1) return null;
-        String ext = pathStr.substring(lastDot + 1).trim().toLowerCase(Locale.ROOT);
+        java.nio.file.Path p = Paths.get(pathStr);
+        String fileName = p.getFileName() != null ? p.getFileName().toString() : pathStr;
+        int lastDot = fileName.lastIndexOf('.');
+        if (lastDot < 0 || lastDot == fileName.length() - 1) return null;
+        String ext = fileName.substring(lastDot + 1).trim().toLowerCase(Locale.ROOT);
         return ext.isEmpty() ? null : ext;
     }
 }

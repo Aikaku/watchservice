@@ -28,6 +28,29 @@ public class SettingsController {
     @GetMapping("/folders/browse")
     public ApiResponse<Map<String, Object>> browseDirectory(
             @RequestParam(value = "path", defaultValue = "") String path) {
+
+        boolean isWindows = File.separatorChar == '\\';
+
+        // Windows: path="" -> 드라이브 목록 반환
+        if (isWindows && (path == null || path.isBlank())) {
+            File[] roots = File.listRoots();
+            List<Map<String, String>> driveEntries = new ArrayList<>();
+            if (roots != null) {
+                for (File root : roots) {
+                    Map<String, String> entry = new LinkedHashMap<>();
+                    entry.put("name", root.getAbsolutePath());
+                    entry.put("path", root.getAbsolutePath());
+                    driveEntries.add(entry);
+                }
+            }
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("current", "");
+            result.put("parent", null);
+            result.put("entries", driveEntries);
+            log.info("[SettingsController] GET /settings/folders/browse (Windows drive list) -> {}개 드라이브", driveEntries.size());
+            return ApiResponse.ok(result);
+        }
+
         File dir;
         if (path == null || path.isBlank()) {
             dir = new File(System.getProperty("user.home"));
@@ -39,7 +62,7 @@ public class SettingsController {
             dir = new File(System.getProperty("user.home"));
         }
 
-        File[] children = dir.listFiles(f -> f.isDirectory() && !f.getName().startsWith("."));
+        File[] children = dir.listFiles(f -> f.isDirectory() && !f.isHidden() && !f.getName().startsWith("."));
         List<Map<String, String>> entries = new ArrayList<>();
         if (children != null) {
             Arrays.stream(children)
@@ -52,7 +75,11 @@ public class SettingsController {
                     });
         }
 
+        // Windows 드라이브 루트(C:\)에서 getParent()는 null -> "" 으로 변환해 드라이브 목록으로 복귀
         String parentPath = dir.getParent();
+        if (parentPath == null && isWindows) {
+            parentPath = "";
+        }
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("current", dir.getAbsolutePath());
