@@ -11,6 +11,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -173,6 +174,11 @@ public class EventWindowAggregator {
      * 작성 날짜 : 2025/12/17
      * 작성자 : 시스템
      */
+    @Scheduled(fixedDelay = 3000)
+    public void scheduledFlush() {
+        flushIfNeeded();
+    }
+
     public synchronized void flushIfNeeded() {
         for (UserWindowState state : userWindowStates.values()) {
             if (!state.currentEvents.isEmpty()) {
