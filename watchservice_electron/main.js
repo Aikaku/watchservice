@@ -236,6 +236,14 @@ function createTray() {
 // ──────────────────────────────────────────────
 ipcMain.handle('get-app-version', () => app.getVersion());
 
+ipcMain.on('window-minimize', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize();
+});
+
+ipcMain.on('window-close', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
+});
+
 ipcMain.handle('check-for-updates', () => {
   return new Promise((resolve) => {
     const currentVersion = app.getVersion();
@@ -287,16 +295,21 @@ app.whenReady().then(async () => {
   // 로딩 창 표시
   mainWindow = new BrowserWindow({
     width: 420,
-    height: 260,
+    height: 280,
+    minWidth: 340,
+    minHeight: 220,
     frame: false,
-    resizable: false,
+    resizable: true,
     center: true,
     icon: process.platform === 'win32'
       ? (fs.existsSync(path.join(__dirname, 'assets', 'icon.ico'))
           ? path.join(__dirname, 'assets', 'icon.ico') : undefined)
       : (fs.existsSync(path.join(__dirname, 'assets', 'icon.png'))
           ? path.join(__dirname, 'assets', 'icon.png') : undefined),
-    webPreferences: { contextIsolation: true },
+    webPreferences: {
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+    },
   });
   mainWindow.loadFile(path.join(__dirname, 'assets', 'loading.html'));
 
