@@ -117,7 +117,8 @@ function waitForSpring() {
 
     const check = () => {
       const req = http.get(`http://localhost:${PORT}/actuator/health`, (res) => {
-        if (res.statusCode === 200) {
+        // 200(정상) 또는 503(일부 헬스체크 실패)도 서버가 뜬 것으로 간주
+        if (res.statusCode === 200 || res.statusCode === 503) {
           resolve();
         } else {
           retry();

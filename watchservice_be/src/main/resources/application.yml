@@ -53,6 +53,9 @@ management:
   endpoint:
     health:
       show-details: never  # 내부 상세 정보 숨김 (운영 보안)
+  health:
+    mail:
+      enabled: false        # 메일 서버 미설정 시 헬스체크 실패 방지
 
 # 로그 설정은 logback-spring.xml 참조 (파일 롤링 포함)
 # SQL 상세 로그 보려면 --spring.profiles.active=dev 로 실행
