@@ -237,6 +237,14 @@ function createTray() {
 // ──────────────────────────────────────────────
 ipcMain.handle('get-app-version', () => app.getVersion());
 
+ipcMain.handle('get-login-item', () => app.getLoginItemSettings().openAtLogin);
+
+ipcMain.handle('set-login-item', (_event, enabled) => {
+  app.setLoginItemSettings({ openAtLogin: !!enabled });
+  tray.setContextMenu(buildContextMenu());
+  return app.getLoginItemSettings().openAtLogin;
+});
+
 ipcMain.on('window-minimize', () => {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.minimize();
 });
@@ -288,10 +296,6 @@ ipcMain.handle('check-for-updates', () => {
 app.whenReady().then(async () => {
   createTray();
 
-  // 패키징된 앱 첫 실행 시 시작 프로그램 자동 등록
-  if (app.isPackaged && !app.getLoginItemSettings().openAtLogin) {
-    app.setLoginItemSettings({ openAtLogin: true });
-  }
 
   // 로딩 창 표시
   mainWindow = new BrowserWindow({

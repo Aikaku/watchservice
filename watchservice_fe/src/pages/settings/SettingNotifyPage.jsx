@@ -3,9 +3,12 @@ import { fetchNotificationSettings, updateNotificationSettings } from '../../api
 
 const STORAGE_KEY = 'watchservice.notifySettings';
 
+const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
+
 function SettingNotifyPage() {
   const [popup, setPopup] = useState(true);
   const [sound, setSound] = useState(false);
+  const [autoLaunch, setAutoLaunch] = useState(false);
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState({ text: '', type: '' });
 
@@ -34,8 +37,23 @@ function SettingNotifyPage() {
         if (mounted) setLoading(false);
       }
     })();
+
+    if (isElectron) {
+      window.electronAPI.getLoginItem().then((val) => {
+        if (mounted) setAutoLaunch(!!val);
+      });
+    }
+
     return () => { mounted = false; };
   }, []);
+
+  const handleAutoLaunchChange = async (e) => {
+    const enabled = e.target.checked;
+    setAutoLaunch(enabled);
+    if (isElectron) {
+      await window.electronAPI.setLoginItem(enabled);
+    }
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -93,6 +111,17 @@ function SettingNotifyPage() {
             onChange={(e) => setSound(e.target.checked)}
           />
         </div>
+
+        {isElectron && (
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 2 }}>시스템 설정</div>
+            <ToggleRow
+              label="컴퓨터 시작 시 자동 실행"
+              checked={autoLaunch}
+              onChange={handleAutoLaunchChange}
+            />
+          </div>
+        )}
 
         <button className="btn" onClick={handleSave} disabled={loading}>
           {loading ? '처리 중...' : '저장'}
