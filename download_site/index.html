@@ -249,11 +249,10 @@
         <li>시작 프로그램 자동 등록</li>
         <li>시작 메뉴 · 바탕화면 바로가기</li>
       </ul>
-      <!-- GITHUB_REPO 를 실제 레포 경로로 교체 (예: username/watchservice) -->
       <a id="btn-win"
-         class="btn-download"
-         href="https://github.com/GITHUB_REPO/releases/latest/download/WatchService-Agent-Setup.msi">
-        ⬇ Windows(.msi) 다운로드
+         class="btn-download disabled"
+         href="#">
+        ⬇ Windows(.msi) — 준비 중
       </a>
       <div class="file-size">약 155 MB</div>
     </div>
@@ -271,7 +270,7 @@
       </ul>
       <a id="btn-mac"
          class="btn-download"
-         href="https://github.com/GITHUB_REPO/releases/latest/download/WatchService-Agent.dmg">
+         href="https://github.com/Aikaku/watchservice/releases/latest/download/WatchService-Agent-1.0.0-arm64.dmg">
         ⬇ macOS(.dmg) 다운로드
       </a>
       <div class="file-size">약 155 MB</div>
@@ -280,7 +279,7 @@
 
   <div class="version-info">
     최신 버전 &nbsp;|&nbsp;
-    <a href="https://github.com/GITHUB_REPO/releases" id="release-link">모든 릴리스 보기</a>
+    <a href="https://github.com/Aikaku/watchservice/releases" id="release-link">모든 릴리스 보기</a>
     &nbsp;|&nbsp;
     <a href="INSTALL_GUIDE.md">설치 가이드</a>
   </div>
@@ -328,8 +327,8 @@
   </div>
 
   <footer>
-    <a href="https://github.com/GITHUB_REPO">GitHub</a> &nbsp;·&nbsp;
-    <a href="https://github.com/GITHUB_REPO/issues">문의 / 버그 신고</a>
+    <a href="https://github.com/Aikaku/watchservice">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://github.com/Aikaku/watchservice/issues">문의 / 버그 신고</a>
     <br><br>
     © 2026 WatchService Agent. 무료 소프트웨어.
   </footer>
@@ -354,7 +353,7 @@
 
     // GitHub API로 최신 버전 태그 동적 표시 (선택사항)
     // 실제 레포 경로 설정 필요
-    const REPO = 'GITHUB_REPO';
+    const REPO = 'Aikaku/watchservice';
     if (!REPO.includes('GITHUB_REPO')) {
       fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
         .then(r => r.json())
