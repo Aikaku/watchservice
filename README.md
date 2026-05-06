@@ -1,6 +1,10 @@
-# WatchService — 랜섬웨어 실시간 탐지 시스템
+# WatchService Agent — 랜섬웨어 실시간 탐지 시스템
 
-파일시스템을 실시간으로 감시하여 랜섬웨어 행위 패턴을 탐지하고, 관리자에게 경보를 전달하는 시스템이다.
+파일시스템을 실시간으로 감시하여 랜섬웨어 행위 패턴을 탐지하고, 경보와 대응 가이드를 제공하는 데스크탑 보안 에이전트다.
+
+[![다운로드](https://img.shields.io/badge/다운로드-v1.0.0-blue)](https://aikaku.github.io/watchservice/download_site/)
+[![GitHub](https://img.shields.io/badge/GitHub-Aikaku%2Fwatchservice-181717?logo=github)](https://github.com/Aikaku/watchservice)
+[![릴리스](https://img.shields.io/github/v/release/Aikaku/watchservice)](https://github.com/Aikaku/watchservice/releases)
 
 ---
 
@@ -52,7 +56,7 @@
 
 ### 방법 A — 데스크탑 앱 (인스톨러)
 
-[다운로드 페이지](download_site/INSTALL_GUIDE.md)에서 `.dmg` (macOS) 또는 `.msi` (Windows) 설치 후 실행.
+**[다운로드 페이지](https://aikaku.github.io/watchservice/download_site/)** 에서 `.dmg` (macOS) 또는 `.msi` (Windows) 설치 후 실행.
 Java 설치 불필요 — JRE가 앱 안에 번들되어 있다.
 
 > AI 서버는 별도 배포 필요 (아래 [AI 서버 실행](#1-ai-서버-실행) 참고).
@@ -156,25 +160,22 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
   → 알림 저장 + Gemini 대응 가이드 생성
 ```
 
-### 구현 예정 기능 (13개)
+### 추가 구현 기능
 
 | 기능 | 설명 |
 |------|------|
 | 이메일 알림 | DANGER 탐지 시 경고 메일 자동 발송 |
 | 수동 스캔 | 원하는 시점에 감시 폴더 전수 스캔 |
-| 오탐 신고 | 알림에서 원클릭으로 예외 규칙 자동 등록 |
-| 사용자 정의 탐지 규칙 | 9개 피처 기반 커스텀 조건 설정 |
-| Electron 긴급 전체 화면 경보 | DANGER 탐지 시 전체 화면 경보 강제 표시 |
-| 감시 폴더 삭제·이름 변경 감지 | 루트 폴더 파괴 즉시 DANGER 경보 |
-| 탐지 리포트 PDF 생성 | 기간별 탐지 현황 PDF 내보내기 |
-| 알림 심각도별 소리 알림 | 심각도에 따른 차별화 경고음 |
+| 오탐 신고 | 알림에서 원클릭으로 피드백·예외 규칙 등록 |
+| 긴급 전체화면 경보 | DANGER 탐지 시 Electron 전체화면 경보 강제 표시 |
+| 탐지 리포트 PDF | 기간별 탐지 현황 PDF 내보내기 |
+| 심각도별 소리 알림 | 심각도에 따른 차별화 경고음 |
 | 감시 스케줄 설정 | 특정 시간대·요일에만 감시 활성화 |
 | 랜섬웨어 패밀리 상세 정보 | 패밀리별 공격 방식·대응 방법 안내 |
 | 파일 확장자 분포 차트 | 탐지 이벤트 확장자 분포 시각화 |
-| 자주 변경되는 파일 TOP 10 | 집중 공격 대상 파일 순위 |
-| 파일 권한 보안 감사 | others 쓰기·실행 권한 파일 조회·수정 |
-
-> 상세 명세: [구현예정_기능명세.md](구현예정_기능명세.md)
+| 자주 변경 파일 Top N | 집중 공격 대상 파일 순위 차트 |
+| 파일 권한 보안 감사 | others 쓰기·실행 권한 파일 조회 (macOS/Linux) |
+| 컴퓨터 시작 시 자동 실행 | 설정 페이지에서 시작 프로그램 등록·해제 |
 
 ### 9개 피처 (AiPayload)
 
@@ -316,10 +317,12 @@ SQLite (`log.db`) — 프로젝트 루트에 자동 생성.
 
 | 문서 | 내용 |
 |------|------|
-| [유스케이스.md](유스케이스.md) | 사용자 유스케이스 29개 상세 정의 (액터·흐름·예외 포함) |
-| [구현예정_기능명세.md](구현예정_기능명세.md) | 구현 예정 13개 기능 상세 명세 (동작 흐름·API·DB 설계) |
-| [추가기능_후보.md](추가기능_후보.md) | 추가 구현 가능 기능 후보 59개 (임팩트·난이도·구현 방법) |
-| [진행상황표.md](진행상황표.md) | 주별 진행 상황 (보안·백엔드·프론트·AI·배포·추가기능 포함) |
+| [유스케이스.md](문서/유스케이스.md) | 사용자 유스케이스 29개 상세 정의 (액터·흐름·예외 포함) |
+| [구현예정_기능명세.md](문서/구현예정_기능명세.md) | 추가 구현 기능 상세 명세 (동작 흐름·API·DB 설계) |
+| [추가기능_후보.md](문서/추가기능_후보.md) | 추가 구현 가능 기능 후보 59개 (임팩트·난이도·구현 방법) |
+| [진행상황표.md](문서/진행상황표.md) | 주별 진행 상황 (보안·백엔드·프론트·AI·배포·추가기능 포함) |
+| [테스트_가이드.md](문서/테스트_가이드.md) | 기능 테스트 체크리스트 및 단계별 테스트 가이드 |
+| [배포_가이드.md](문서/배포_가이드.md) | Electron 인스톨러·AI 서버 배포 절차 |
 | [FEATURE_CHANGES.md](FEATURE_CHANGES.md) | AI 피처 계산 방식 변경 이력 |
 | [ai_server_deploy/README_DEPLOY.md](ai_server_deploy/README_DEPLOY.md) | AI 서버 Railway/Render 배포 절차 |
 | [download_site/INSTALL_GUIDE.md](download_site/INSTALL_GUIDE.md) | Windows/macOS 설치 가이드 |
