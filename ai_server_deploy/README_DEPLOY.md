@@ -21,10 +21,10 @@ mkdir ai-server && cd ai-server
 git init
 
 # 아래 파일들을 이 폴더로 복사
-# 원본: 통합프로젝트/코드/api_server.py
-# 원본: 통합프로젝트/코드/artifacts/  (model_xgb.json, features.json, classes.json)
-cp ../통합/코드/api_server.py .
-cp -r ../통합/코드/artifacts ./artifacts
+# 원본: 통합프로젝트/ai_server/api_server.py
+# 원본: 통합프로젝트/ai_server/artifacts/  (model_xgb.json, features.json, classes.json)
+cp ../통합/ai_server/api_server.py .
+cp -r ../통합/ai_server/artifacts ./artifacts
 cp -r ../통합/ai_server_deploy/configs ./configs
 
 # 이 폴더의 파일들도 복사

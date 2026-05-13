@@ -68,13 +68,13 @@ Java 설치 불필요 — JRE가 앱 안에 번들되어 있다.
 #### 1. AI 서버 실행
 
 ```bash
-cd 코드/
+cd ai_server/
 pip install -r ../ai_server_deploy/requirements.txt
 python api_server.py
 # → http://localhost:8001
 ```
 
-아티팩트 파일(`model_xgb.json`, `features.json`, `classes.json`)은 `코드/artifacts/` 폴더에 위치해야 한다.
+아티팩트 파일(`model_xgb.json`, `features.json`, `classes.json`)은 `ai_server/artifacts/` 폴더에 위치해야 한다.
 
 #### 2. 백엔드 실행
 
@@ -248,7 +248,7 @@ htpasswd -bnBC 10 "" yourPassword | tr -d ':\n'
 │   ├── preload.js
 │   ├── package.json          # electron-builder 설정 (.dmg/.msi)
 │   └── assets/               # 아이콘·로딩 화면·오류 화면
-├── 코드/                     # AI 서버 (FastAPI + XGBoost)
+├── ai_server/                     # AI 서버 (FastAPI + XGBoost)
 │   ├── api_server.py         # FastAPI 엔드포인트
 │   └── artifacts/            # 학습된 모델·피처 목록
 │       ├── model_xgb.json
