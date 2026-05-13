@@ -1,0 +1,28 @@
+2026-05-13 14:52:01.220 [main] INFO  c.w.w.WatchserviceAgentApplication - Starting WatchserviceAgentApplication using Java 17.0.16 with PID 3561 (/Users/sanghyeok/Desktop/Project/통합/watchservice_be/build/classes/java/main started by sanghyeok in /Users/sanghyeok/Desktop/Project/통합/watchservice_be)
+2026-05-13 14:52:01.220 [main] INFO  c.w.w.WatchserviceAgentApplication - No active profile set, falling back to 1 default profile: "default"
+2026-05-13 14:52:02.224 [main] INFO  c.w.w.alerts.NotificationRepository - [NotificationRepository] notification 테이블 초기화 완료
+2026-05-13 14:52:02.242 [main] INFO  c.w.w.storage.LogRepository - [LogRepository] log 테이블 초기화 완료
+2026-05-13 14:52:02.247 [main] INFO  c.w.w.admin.NoticeRepository - [NoticeRepository] notice 테이블 초기화 완료
+2026-05-13 14:52:02.251 [main] INFO  c.w.w.settings.SettingsRepository - [SettingsRepository] watched_folder 테이블 초기화 완료
+2026-05-13 14:52:02.251 [main] INFO  c.w.w.settings.SettingsRepository - [SettingsRepository] exception_rule 테이블 초기화 완료
+2026-05-13 14:52:02.252 [main] INFO  c.w.w.settings.SettingsRepository - [SettingsRepository] app_settings 테이블 초기화 완료
+2026-05-13 14:52:02.262 [main] INFO  c.w.watchservice_agent.ai.AiService - [AiService] RestTemplate 초기화 — connectTimeout=5000ms, readTimeout=15000ms
+2026-05-13 14:52:02.264 [main] INFO  c.w.w.storage.LogWriterWorker - [LogWriterWorker] 워커 스레드 시작
+2026-05-13 14:52:02.277 [main] INFO  c.w.w.a.EventWindowAggregator - [EventWindowAggregator] init config: windowMs=3000 touchTimeoutMs=300000 renameMaxGapMs=2000 encryptEntropyDiffThreshold=0.3 encryptMinSizeBytes=4096 randomExtMinCount=2 randomExtMinLength=4 whitelistSize=33
+2026-05-13 14:52:02.346 [main] INFO  c.w.w.admin.FeedbackRepository - [FeedbackRepository] feedback 테이블 초기화 완료
+2026-05-13 14:52:02.352 [main] INFO  c.w.w.admin.GuideRepository - [GuideRepository] guide 테이블 초기화 완료
+2026-05-13 14:52:02.357 [main] INFO  c.w.w.audit.AuditRepository - [AuditRepository] file_audit 테이블 초기화 완료
+2026-05-13 14:52:02.361 [main] INFO  c.w.w.common.config.SqliteConfig - [SqliteConfig] journal_mode 설정 완료: wal
+2026-05-13 14:52:02.361 [main] INFO  c.w.w.common.config.SqliteConfig - [SqliteConfig] foreign_keys=ON 설정 완료
+2026-05-13 14:52:02.361 [main] INFO  c.w.w.common.config.WebConfig - [WebConfig] 활성화
+2026-05-13 14:52:02.364 [main] INFO  c.w.w.common.util.SessionIdManager - [SessionIdManager] 기존 Session ID 로드: cfe8c4fa-ebbb-416d-b528-ea4d25ffd08f (파일: /Users/sanghyeok/Desktop/Project/통합/watchservice_be/./config/session_id.txt)
+2026-05-13 14:52:02.364 [main] INFO  c.w.w.common.util.SessionIdManager - [SessionIdManager] Session ID 초기화 완료: cfe8c4fa-ebbb-416d-b528-ea4d25ffd08f
+2026-05-13 14:52:02.392 [main] INFO  c.w.w.common.config.WebConfig - [WebConfig] CORS allowedOrigins=[http://localhost:3000]
+2026-05-13 14:52:02.485 [main] WARN  o.s.b.a.s.s.UserDetailsServiceAutoConfiguration - 
+
+Using generated security password: efb0bad0-e169-4305-abdc-f55b64e8bbff
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-05-13 14:52:02.611 [main] INFO  c.w.w.WatchserviceAgentApplication - Started WatchserviceAgentApplication in 1.588 seconds (process running for 1.72)
+2026-05-13 14:52:02.629 [scheduling-1] INFO  c.w.w.a.FilePermissionAuditService - [AuditService] 감사 완료: ownerKey=cfe8c4fa-ebbb-416d-b528-ea4d25ffd08f, 위험파일=3건
