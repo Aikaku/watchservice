@@ -15,6 +15,12 @@ import java.nio.file.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * 클래스 이름 : ScanService
+ * 기능 : 즉시 검사(스캔) 작업을 생성·실행·조회·중단한다. 스캔 완료 후 WatcherService 자동 시작을 지원한다.
+ * 작성 날짜 : 2026/03/04
+ * 작성자 : 이상혁
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -26,6 +32,14 @@ public class ScanService {
     private final Map<String, ScanJob> jobs = new ConcurrentHashMap<>();
     private final ExecutorService executor = Executors.newCachedThreadPool();
 
+    /*
+     * 함수 이름 : startScan
+     * 기능 : 스캔 작업을 생성하고 비동기로 실행한다. 스캔 ID를 반환한다.
+     * 매개변수 : String ownerKey - 세션 소유자 키, List<String> paths - 스캔 루트 경로 목록, boolean autoStartWatcher - 완료 후 watcher 자동 시작 여부
+     * 반환값 : String - 발급된 scanId
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     public String startScan(String ownerKey, List<String> paths, boolean autoStartWatcher) {
         List<String> roots = (paths == null) ? List.of() : paths.stream()
                 .filter(Objects::nonNull)
@@ -47,11 +61,27 @@ public class ScanService {
         return scanId;
     }
 
+    /*
+     * 함수 이름 : pause
+     * 기능 : 진행 중인 스캔에 중단 신호를 보낸다.
+     * 매개변수 : String scanId - 스캔 ID
+     * 반환값 : 없음
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     public void pause(String scanId) {
         ScanJob job = getJobOrThrow(scanId);
         job.pause();
     }
 
+    /*
+     * 함수 이름 : getProgress
+     * 기능 : 스캔 작업의 현재 진행 상태(퍼센트, 스캔 수, 경로 등)를 반환한다.
+     * 매개변수 : String scanId - 스캔 ID
+     * 반환값 : ScanProgressResponse
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     public ScanProgressResponse getProgress(String scanId) {
         ScanJob job = getJobOrThrow(scanId);
 
@@ -65,12 +95,28 @@ public class ScanService {
                 .build();
     }
 
+    /*
+     * 함수 이름 : getJobOrThrow
+     * 기능 : scanId로 ScanJob을 조회한다. 없으면 IllegalArgumentException을 던진다.
+     * 매개변수 : String scanId - 스캔 ID
+     * 반환값 : ScanJob
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     private ScanJob getJobOrThrow(String scanId) {
         ScanJob job = jobs.get(scanId);
         if (job == null) throw new IllegalArgumentException("scan not found: " + scanId);
         return job;
     }
 
+    /*
+     * 함수 이름 : runScan
+     * 기능 : 스캔 작업을 실제로 실행한다. 루트 경로를 재귀 탐색하며 FileCollectorService로 snapshot을 채우고, 완료 후 autoStartWatcher가 true이면 WatcherService를 시작한다.
+     * 매개변수 : ScanJob job - 스캔 작업 객체, boolean autoStartWatcher - 완료 후 watcher 자동 시작 여부, String ownerKey - 세션 소유자 키
+     * 반환값 : 없음
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     private void runScan(ScanJob job, boolean autoStartWatcher, String ownerKey) {
 
         try {
@@ -169,6 +215,14 @@ public class ScanService {
         }
     }
 
+    /*
+     * 함수 이름 : countTotalFiles
+     * 기능 : 스캔 루트 경로 목록에서 총 파일 수를 계산한다. 진행률 퍼센트 산출에 사용된다.
+     * 매개변수 : List<String> roots - 루트 경로 목록
+     * 반환값 : long - 총 파일 수
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     private long countTotalFiles(List<String> roots) {
         long total = 0;
         for (String rootStr : (roots == null ? List.<String>of() : roots)) {

@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.util.*;
 
+/**
+ * 클래스 이름 : SettingsController
+ * 기능 : 감시 폴더·예외 규칙·이메일 알림·감시 스케줄 설정 REST 컨트롤러.
+ * 작성 날짜 : 2026/03/04
+ * 작성자 : 이상혁
+ */
 @RestController
 @RequestMapping("/settings")
 @RequiredArgsConstructor
@@ -25,6 +31,14 @@ public class SettingsController {
     private final SettingsService settingsService;
     private final EmailNotificationService emailNotificationService;
 
+    /*
+     * 함수 이름 : browseDirectory
+     * 기능 : 폴더 탐색기용 디렉터리 목록을 반환한다. Windows에서 path가 빈 값이면 드라이브 목록을 반환한다.
+     * 매개변수 : String path - 탐색할 경로 (기본값: 빈 문자열 → 홈 디렉터리)
+     * 반환값 : ApiResponse<Map<String, Object>> - current, parent, entries(name/path 목록)
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @GetMapping("/folders/browse")
     public ApiResponse<Map<String, Object>> browseDirectory(
             @RequestParam(value = "path", defaultValue = "") String path) {
@@ -89,6 +103,14 @@ public class SettingsController {
         return ApiResponse.ok(result);
     }
 
+    /*
+     * 함수 이름 : getWatchedFolders
+     * 기능 : 현재 세션의 감시 폴더 목록을 조회한다.
+     * 매개변수 : HttpSession session - 세션
+     * 반환값 : ApiResponse<List<WatchedFolderResponse>>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @GetMapping("/folders")
     public ApiResponse<List<WatchedFolderResponse>> getWatchedFolders(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -97,6 +119,14 @@ public class SettingsController {
         return ApiResponse.ok(list);
     }
 
+    /*
+     * 함수 이름 : addWatchedFolder
+     * 기능 : 감시 폴더를 추가한다.
+     * 매개변수 : WatchedFolderRequest req - 폴더 이름·경로, HttpSession session - 세션
+     * 반환값 : ApiResponse<WatchedFolderResponse> - 추가된 폴더 정보
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @PostMapping("/folders")
     public ApiResponse<WatchedFolderResponse> addWatchedFolder(
             @Valid @RequestBody WatchedFolderRequest req, HttpSession session) {
@@ -106,6 +136,14 @@ public class SettingsController {
         return ApiResponse.ok(resp);
     }
 
+    /*
+     * 함수 이름 : deleteWatchedFolder
+     * 기능 : 지정한 ID의 감시 폴더를 삭제한다.
+     * 매개변수 : Long id - 폴더 PK, HttpSession session - 세션
+     * 반환값 : ApiResponse<Void>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @DeleteMapping("/folders/{id}")
     public ApiResponse<Void> deleteWatchedFolder(@PathVariable("id") Long id, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -114,6 +152,14 @@ public class SettingsController {
         return ApiResponse.ok();
     }
 
+    /*
+     * 함수 이름 : getExceptionRules
+     * 기능 : 현재 세션의 예외 규칙 목록을 조회한다.
+     * 매개변수 : HttpSession session - 세션
+     * 반환값 : ApiResponse<List<ExceptionRuleResponse>>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @GetMapping("/exceptions")
     public ApiResponse<List<ExceptionRuleResponse>> getExceptionRules(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -122,6 +168,14 @@ public class SettingsController {
         return ApiResponse.ok(list);
     }
 
+    /*
+     * 함수 이름 : addExceptionRule
+     * 기능 : 예외 규칙(오탐 방지)을 추가한다.
+     * 매개변수 : ExceptionRuleRequest req - 타입·패턴·메모, HttpSession session - 세션
+     * 반환값 : ApiResponse<ExceptionRuleResponse> - 추가된 규칙 정보
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @PostMapping("/exceptions")
     public ApiResponse<ExceptionRuleResponse> addExceptionRule(
             @Valid @RequestBody ExceptionRuleRequest req, HttpSession session) {
@@ -131,6 +185,14 @@ public class SettingsController {
         return ApiResponse.ok(resp);
     }
 
+    /*
+     * 함수 이름 : deleteExceptionRule
+     * 기능 : 지정한 ID의 예외 규칙을 삭제한다.
+     * 매개변수 : Long id - 예외 규칙 PK, HttpSession session - 세션
+     * 반환값 : ApiResponse<Void>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @DeleteMapping("/exceptions/{id}")
     public ApiResponse<Void> deleteExceptionRule(@PathVariable("id") Long id, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -141,6 +203,14 @@ public class SettingsController {
 
     // ===== 이메일 알림 설정 =====
 
+    /*
+     * 함수 이름 : getAlertEmail
+     * 기능 : 현재 세션의 DANGER 알림 수신 이메일 주소를 조회한다.
+     * 매개변수 : HttpSession session - 세션
+     * 반환값 : ApiResponse<Map<String, String>> - {"email": "..."}
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @GetMapping("/alert-email")
     public ApiResponse<Map<String, String>> getAlertEmail(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -149,6 +219,14 @@ public class SettingsController {
         return ApiResponse.ok(Map.of("email", email));
     }
 
+    /*
+     * 함수 이름 : updateAlertEmail
+     * 기능 : DANGER 알림 수신 이메일 주소를 저장한다.
+     * 매개변수 : Map<String, String> body - {"email": "..."}, HttpSession session - 세션
+     * 반환값 : ApiResponse<Void>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @PutMapping("/alert-email")
     public ApiResponse<Void> updateAlertEmail(@RequestBody Map<String, String> body, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -160,6 +238,14 @@ public class SettingsController {
 
     // ===== 감시 스케줄 =====
 
+    /*
+     * 함수 이름 : getWatchSchedule
+     * 기능 : 현재 세션의 감시 스케줄 설정(JSON)을 조회한다.
+     * 매개변수 : HttpSession session - 세션
+     * 반환값 : ApiResponse<Map<String, Object>> - {"schedule": "{...}"}
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @GetMapping("/schedule")
     public ApiResponse<Map<String, Object>> getWatchSchedule(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);
@@ -168,6 +254,14 @@ public class SettingsController {
         return ApiResponse.ok(Map.of("schedule", json));
     }
 
+    /*
+     * 함수 이름 : updateWatchSchedule
+     * 기능 : 감시 스케줄 설정(JSON)을 저장한다.
+     * 매개변수 : Map<String, String> body - {"schedule": "{...}"}, HttpSession session - 세션
+     * 반환값 : ApiResponse<Void>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @PutMapping("/schedule")
     public ApiResponse<Void> updateWatchSchedule(
             @RequestBody Map<String, String> body, HttpSession session) {
@@ -178,6 +272,14 @@ public class SettingsController {
         return ApiResponse.ok();
     }
 
+    /*
+     * 함수 이름 : sendTestEmail
+     * 기능 : 입력한 이메일 주소로 테스트 메일을 발송한다.
+     * 매개변수 : Map<String, String> body - {"email": "..."}, HttpSession session - 세션
+     * 반환값 : ApiResponse<Void>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @PostMapping("/alert-email/test")
     public ApiResponse<Void> sendTestEmail(@RequestBody Map<String, String> body, HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);

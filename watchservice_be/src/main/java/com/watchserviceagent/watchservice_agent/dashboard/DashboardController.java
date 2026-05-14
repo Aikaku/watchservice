@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * 클래스 이름 : DashboardController
+ * 기능 : 메인 대시보드 요약 정보를 제공하는 REST 컨트롤러.
+ * 작성 날짜 : 2026/03/04
+ * 작성자 : 이상혁
+ */
 @RestController
 @RequestMapping("/dashboard")
 @RequiredArgsConstructor
@@ -26,6 +32,14 @@ public class DashboardController {
     private final SettingsService settingsService;
     private final NotificationService notificationService;
 
+    /*
+     * 함수 이름 : getSummary
+     * 기능 : 대시보드 상단 요약 카드 데이터를 반환한다. 최근 50개 알림을 조회하여 DANGER/WARNING 개수, 전체 상태, 마지막 이벤트 시각, 감시 경로, 최신 대응 가이던스를 포함한다.
+     * 매개변수 : HttpSession session - 세션 (ownerKey 발급·조회용)
+     * 반환값 : ApiResponse<DashboardSummaryResponse>
+     * 작성 날짜 : 2026/03/04
+     * 작성자 : 이상혁
+     */
     @GetMapping("/summary")
     public ApiResponse<DashboardSummaryResponse> getSummary(HttpSession session) {
         String ownerKey = OwnerKeyUtil.getOrCreate(session);

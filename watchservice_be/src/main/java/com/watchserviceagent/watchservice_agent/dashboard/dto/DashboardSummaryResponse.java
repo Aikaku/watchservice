@@ -5,12 +5,11 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * 메인 대시보드 상단 요약 카드에 사용되는 응답 DTO.
- *
- * 프론트에서 사용하는 필드:
- *  - status      : "SAFE" / "WARNING" / "DANGER"
- *  - statusLabel : "안전" / "주의" / "위험"
- *  - lastEventTime : "YYYY-MM-DD HH:mm:ss" 또는 "-" (이벤트 없으면)
+ * 클래스 이름 : DashboardSummaryResponse
+ * 기능 : 메인 대시보드 상단 요약 카드에 사용되는 응답 DTO.
+ *        status("SAFE"/"WARNING"/"DANGER"), 카운트, 마지막 이벤트 시각, 감시 경로, 대응 가이던스를 포함한다.
+ * 작성 날짜 : 2026/03/04
+ * 작성자 : 이상혁
  */
 @Getter
 @Builder
