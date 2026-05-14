@@ -26,3 +26,10 @@ This generated password is for development use only. Your security configuration
 
 2026-05-13 14:52:02.611 [main] INFO  c.w.w.WatchserviceAgentApplication - Started WatchserviceAgentApplication in 1.588 seconds (process running for 1.72)
 2026-05-13 14:52:02.629 [scheduling-1] INFO  c.w.w.a.FilePermissionAuditService - [AuditService] 감사 완료: ownerKey=cfe8c4fa-ebbb-416d-b528-ea4d25ffd08f, 위험파일=3건
+2026-05-13 15:42:00.848 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Retrograde clock change detected (housekeeper delta=27s956ms), soft-evicting connections from pool.
+2026-05-13 15:51:46.490 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=1m15s561ms).
+2026-05-13 15:52:36.181 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=49s691ms).
+2026-05-13 15:55:26.190 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=2m50s8ms).
+2026-05-13 17:41:10.077 [LogWriterWorker-Thread] INFO  c.w.w.storage.LogWriterWorker - [LogWriterWorker] 워커 스레드 인터럽트, 종료 준비
+2026-05-13 17:41:10.079 [LogWriterWorker-Thread] INFO  c.w.w.storage.LogWriterWorker - [LogWriterWorker] 워커 루프 종료
+2026-05-13 17:41:10.079 [SpringApplicationShutdownHook] INFO  c.w.w.storage.LogWriterWorker - [LogWriterWorker] 워커 스레드 종료
