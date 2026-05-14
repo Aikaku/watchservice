@@ -4,6 +4,7 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+const net = require('net');
 
 // 업데이트 확인용 GitHub 저장소 (실제 저장소 경로로 변경)
 const GITHUB_REPO = process.env.GITHUB_REPO || 'your-org/watchservice-agent';
@@ -18,6 +19,8 @@ const SPRING_READY_TIMEOUT_MS = 60000; // 최대 대기 시간 (60초)
 let mainWindow = null;
 let tray = null;
 let springProcess = null;
+let springExited = false;
+let springErrorReason = null;
 
 // ──────────────────────────────────────────────
 // 긴급 경보 상태
@@ -71,6 +74,27 @@ function loadIcon(filename) {
 }
 
 // ──────────────────────────────────────────────
+// 포트 사용 여부 확인
+// ──────────────────────────────────────────────
+function checkPortAvailable(port) {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', () => resolve(false));
+    server.once('listening', () => { server.close(); resolve(true); });
+    server.listen(port, '127.0.0.1');
+  });
+}
+
+// ──────────────────────────────────────────────
+// 오류 화면 표시
+// ──────────────────────────────────────────────
+function showError(reason) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const opts = reason ? { query: { reason } } : {};
+  mainWindow.loadFile(path.join(__dirname, 'assets', 'error.html'), opts).catch(() => {});
+}
+
+// ──────────────────────────────────────────────
 // Spring Boot 시작
 // ──────────────────────────────────────────────
 function startSpringBoot() {
@@ -96,14 +120,22 @@ function startSpringBoot() {
   });
 
   springProcess.stderr.on('data', (data) => {
-    console.error('[Spring ERR]', data.toString().trim());
+    const text = data.toString();
+    console.error('[Spring ERR]', text.trim());
+    if (!springErrorReason && (text.includes('already in use') || text.includes('Address already in use'))) {
+      springErrorReason = 'port';
+    }
   });
 
   springProcess.on('exit', (code) => {
     console.log('[Electron] Spring Boot 종료. code=', code);
+    springExited = true;
+    // 앱이 완전히 기동된 후 크래시 → 메인 창에 직접 오류 표시
     if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.loadFile(path.join(__dirname, 'assets', 'error.html'))
-        .catch(() => {});
+      const url = mainWindow.webContents.getURL();
+      if (url.startsWith(`http://localhost:${PORT}`)) {
+        showError(springErrorReason || 'crash');
+      }
     }
   });
 }
@@ -116,6 +148,7 @@ function waitForSpring() {
     const start = Date.now();
 
     const check = () => {
+      if (springExited) { reject(new Error('crash')); return; }
       const req = http.get(`http://localhost:${PORT}/actuator/health`, (res) => {
         // 200(정상) 또는 503(일부 헬스체크 실패)도 서버가 뜬 것으로 간주
         if (res.statusCode === 200 || res.statusCode === 503) {
@@ -129,8 +162,9 @@ function waitForSpring() {
     };
 
     const retry = () => {
+      if (springExited) { reject(new Error('crash')); return; }
       if (Date.now() - start > SPRING_READY_TIMEOUT_MS) {
-        reject(new Error('Spring Boot 시작 타임아웃'));
+        reject(new Error('timeout'));
         return;
       }
       setTimeout(check, SPRING_READY_POLL_MS);
@@ -319,6 +353,12 @@ app.whenReady().then(async () => {
   mainWindow.loadFile(path.join(__dirname, 'assets', 'loading.html'));
 
   try {
+    const portFree = await checkPortAvailable(PORT);
+    if (!portFree) {
+      springErrorReason = 'port';
+      throw new Error('port_in_use');
+    }
+
     startSpringBoot();
     await waitForSpring();
 
@@ -329,9 +369,8 @@ app.whenReady().then(async () => {
     startDangerPolling();
   } catch (err) {
     console.error('[Electron] 시작 실패:', err.message);
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.loadFile(path.join(__dirname, 'assets', 'error.html'));
-    }
+    const reason = springErrorReason || (err.message === 'timeout' ? 'timeout' : 'crash');
+    showError(reason);
   }
 });
 
