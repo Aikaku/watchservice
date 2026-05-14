@@ -66,21 +66,19 @@ public class EmailNotificationService {
     }
 
     /**
-     * 테스트 이메일을 발송한다. SMTP 설정 확인용.
+     * 테스트 이메일을 동기로 발송한다. 실패 시 예외를 throw하여 컨트롤러가 오류 응답을 반환하게 한다.
      */
-    @Async
     public void sendTestEmail(String recipientEmail) {
         if (recipientEmail == null || recipientEmail.isBlank()) return;
         if (smtpUsername == null || smtpUsername.isBlank()) {
-            log.warn("[EmailNotificationService] SMTP 계정 미설정 — 테스트 발송 불가");
-            return;
+            throw new IllegalStateException("SMTP 계정이 설정되지 않았습니다. 서버 관리자에게 문의하세요.");
         }
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setFrom(smtpUsername);
+            helper.setFrom(smtpUsername != null ? smtpUsername : "");
             helper.setTo(recipientEmail);
             helper.setSubject("[WatchService] 이메일 알림 테스트");
             helper.setText("""
@@ -95,6 +93,7 @@ public class EmailNotificationService {
             log.info("[EmailNotificationService] 테스트 이메일 발송 완료 → {}", recipientEmail);
         } catch (MessagingException e) {
             log.error("[EmailNotificationService] 테스트 이메일 발송 실패 → {}", recipientEmail, e);
+            throw new RuntimeException("메일 발송 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
     }
 
