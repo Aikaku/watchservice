@@ -12,6 +12,14 @@ const DEFAULT_SCHEDULE = {
   endTime: '18:00',
 };
 
+/*
+ * 함수 이름 : SettingSchedulePage
+ * 기능 : 감시 스케줄 설정 페이지 컴포넌트. 요일 및 시간대별 감시 자동 활성화 일정을 설정한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingSchedulePage() {
   const { showToast } = useToast();
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
@@ -36,6 +44,14 @@ function SettingSchedulePage() {
     })();
   }, []);
 
+  /*
+   * 함수 이름 : toggleDay
+   * 기능 : 요일 버튼 클릭 시 해당 요일의 감시 활성화 여부를 토글한다.
+   * 매개변수 : day - 토글할 요일 값 (1~7, 월~일)
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const toggleDay = (day) => {
     setSchedule((prev) => {
       const days = prev.days.includes(day)
@@ -45,6 +61,14 @@ function SettingSchedulePage() {
     });
   };
 
+  /*
+   * 함수 이름 : handleSave
+   * 기능 : 저장 버튼 클릭 시 현재 스케줄 설정을 서버에 저장한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleSave = async () => {
     setSaving(true);
     try {

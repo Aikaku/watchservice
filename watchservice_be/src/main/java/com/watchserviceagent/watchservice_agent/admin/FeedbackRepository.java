@@ -24,6 +24,14 @@ public class FeedbackRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /*
+     * 함수 이름 : init
+     * 기능 : 애플리케이션 시작 시 feedback 테이블을 생성한다. 이미 존재하면 건너뛴다.
+     * 매개변수 : 없음
+     * 반환값 : 없음
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     @PostConstruct
     public void init() {
         String ddl = """
@@ -38,11 +46,27 @@ public class FeedbackRepository {
         log.info("[FeedbackRepository] feedback 테이블 초기화 완료");
     }
 
+    /*
+     * 함수 이름 : insert
+     * 기능 : 새 피드백을 DB에 저장한다.
+     * 매개변수 : email - 제출자 이메일, content - 피드백 내용
+     * 반환값 : 없음
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public void insert(String email, String content) {
         String sql = "INSERT INTO feedback (email, content, created_at) VALUES (?, ?, ?)";
         jdbcTemplate.update(sql, email, content, Instant.now().toEpochMilli());
     }
 
+    /*
+     * 함수 이름 : findAllDesc
+     * 기능 : 모든 피드백을 최신순으로 조회한다.
+     * 매개변수 : 없음
+     * 반환값 : List<Feedback> - 피드백 목록
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public List<Feedback> findAllDesc() {
         String sql = """
                 SELECT id, email, content, created_at
@@ -52,11 +76,27 @@ public class FeedbackRepository {
         return jdbcTemplate.query(sql, feedbackRowMapper());
     }
 
+    /*
+     * 함수 이름 : deleteById
+     * 기능 : 특정 ID의 피드백을 삭제한다.
+     * 매개변수 : id - 삭제할 피드백 ID
+     * 반환값 : int - 삭제된 행 수
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public int deleteById(long id) {
         String sql = "DELETE FROM feedback WHERE id = ?";
         return jdbcTemplate.update(sql, id);
     }
 
+    /*
+     * 함수 이름 : feedbackRowMapper
+     * 기능 : ResultSet 행을 Feedback 도메인 객체로 변환하는 RowMapper를 반환한다.
+     * 매개변수 : 없음
+     * 반환값 : RowMapper<Feedback> - 행 매핑 함수
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     private RowMapper<Feedback> feedbackRowMapper() {
         return new RowMapper<>() {
             @Override

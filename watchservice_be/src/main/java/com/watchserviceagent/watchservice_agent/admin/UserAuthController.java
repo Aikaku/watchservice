@@ -21,7 +21,14 @@ public class UserAuthController {
 
     private final UserAuthService userAuthService;
 
-    /** 세션 유효성 확인. 인증 비활성 시 항상 200 반환 */
+    /*
+     * 함수 이름 : check
+     * 기능 : 현재 사용자 세션의 인증 상태를 확인한다. 인증 기능 비활성화 시 항상 200을 반환한다.
+     * 매개변수 : request - HTTP 요청 객체
+     * 반환값 : 인증 상태 및 인증 활성화 여부를 담은 JSON 응답
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     @GetMapping("/api/user/check")
     public ResponseEntity<?> check(HttpServletRequest request) {
         if (!userAuthService.isAuthEnabled()) {
@@ -35,6 +42,14 @@ public class UserAuthController {
         return ResponseEntity.status(401).body(Map.of("authenticated", false, "authEnabled", true));
     }
 
+    /*
+     * 함수 이름 : login
+     * 기능 : 사용자 로그인 요청을 처리한다. 인증 성공 시 세션에 USER_AUTH 속성을 설정한다.
+     * 매개변수 : req - 로그인 요청 (password), request - HTTP 요청 객체
+     * 반환값 : 성공 시 {"result":"ok"}, 실패 시 401 {"error":"invalid_password"}
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     @PostMapping("/api/user/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest req, HttpServletRequest request) {
         if (!userAuthService.isAuthEnabled()) {
@@ -48,6 +63,14 @@ public class UserAuthController {
         return ResponseEntity.status(401).body(Map.of("error", "invalid_password"));
     }
 
+    /*
+     * 함수 이름 : logout
+     * 기능 : 사용자 세션에서 인증 속성을 제거하여 로그아웃 처리한다.
+     * 매개변수 : request - HTTP 요청 객체
+     * 반환값 : {"result":"ok"}
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     @PostMapping("/api/user/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
         HttpSession session = request.getSession(false);

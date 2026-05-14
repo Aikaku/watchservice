@@ -1,9 +1,19 @@
 /**
  * 파일 이름 : ErrorBoundary.jsx
  * 기능 : React 런타임 오류를 잡아 흰 화면 대신 에러 안내 페이지를 표시한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
  */
 import React from 'react';
 
+/*
+ * 함수 이름 : ErrorBoundary
+ * 기능 : React 런타임 오류를 잡아 에러 안내 화면을 표시하는 클래스 컴포넌트. hasError 상태일 때 에러 메시지와 재시도 버튼을 표시한다.
+ * 매개변수 : children - 자식 컴포넌트
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);

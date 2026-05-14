@@ -1,12 +1,22 @@
 /**
  * 파일 이름 : AdminLogPage.jsx
  * 기능 : 관리자 전용 로그 관리 페이지. 전체 owner_key의 로그를 조회·삭제·CSV 내보내기한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { fetchAdminLogs, deleteAdminLog, deleteAdminLogs } from '../../api/AdminApi';
 import { useToast } from '../../components/common/Toast';
 import { useConfirm } from '../../components/common/ConfirmModal';
 
+/*
+ * 함수 이름 : AdminLogPage
+ * 기능 : 관리자 전용 로그 관리 페이지 컴포넌트. 전체 에이전트의 파일 이벤트 로그를 페이지네이션, 필터링하여 조회하고 개별/일괄 삭제한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function AdminLogPage() {
   const toast = useToast();
   const confirm = useConfirm();
@@ -27,6 +37,14 @@ function AdminLogPage() {
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil((data.total || 0) / size)), [data.total, size]);
 
+  /*
+   * 함수 이름 : load
+   * 기능 : 현재 필터 조건으로 로그 목록을 서버에서 불러온다.
+   * 매개변수 : p - 조회할 페이지 번호 (기본값: 현재 page 상태)
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const load = async (p = page) => {
     setLoading(true);
     setError(null);
@@ -43,8 +61,24 @@ function AdminLogPage() {
 
   useEffect(() => { load(1); setPage(1); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /*
+   * 함수 이름 : handleSearch
+   * 기능 : 검색 버튼 클릭 시 첫 페이지에서 로그 목록을 다시 불러온다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const handleSearch = () => { setPage(1); load(1); };
 
+  /*
+   * 함수 이름 : handleDelete
+   * 기능 : 특정 로그를 삭제한다. 확인 모달 후 삭제 요청을 보낸다.
+   * 매개변수 : id - 삭제할 로그 ID
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const handleDelete = async (id) => {
     if (!await confirm(`로그 #${id}를 삭제하시겠습니까?`)) return;
     try {
@@ -55,6 +89,14 @@ function AdminLogPage() {
     }
   };
 
+  /*
+   * 함수 이름 : handleBulkDelete
+   * 기능 : 선택된 여러 로그를 일괄 삭제한다. 확인 모달 후 삭제 요청을 보낸다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const handleBulkDelete = async () => {
     if (selected.size === 0) return;
     if (!await confirm(`선택된 ${selected.size}개 로그를 삭제하시겠습니까?`)) return;
@@ -66,12 +108,28 @@ function AdminLogPage() {
     }
   };
 
+  /*
+   * 함수 이름 : toggleSelect
+   * 기능 : 특정 항목의 선택 상태를 토글한다.
+   * 매개변수 : id - 토글할 항목 ID
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const toggleSelect = (id) => {
     const next = new Set(selected);
     next.has(id) ? next.delete(id) : next.add(id);
     setSelected(next);
   };
 
+  /*
+   * 함수 이름 : toggleAll
+   * 기능 : 현재 페이지의 모든 항목 선택 상태를 토글한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const toggleAll = () => {
     if (selected.size === data.items.length) {
       setSelected(new Set());

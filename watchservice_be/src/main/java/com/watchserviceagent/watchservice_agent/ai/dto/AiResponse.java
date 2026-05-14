@@ -48,7 +48,14 @@ public class AiResponse {
         private Double prob;
     }
 
-    /** top_family 추출: detail 우선, 없으면 topk[0].family */
+    /*
+     * 함수 이름 : getTopFamily
+     * 기능 : 응답에서 top_family를 추출한다. detail 필드에 파싱을 시도하고, 없으면 topk[0].family를 반환한다.
+     * 매개변수 : 없음
+     * 반환값 : String - 최상위 패밀리명, 없으면 null
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public String getTopFamily() {
         // 1) detail에서 파싱
         if (detail != null && !detail.isBlank()) {
@@ -70,7 +77,14 @@ public class AiResponse {
         return null;
     }
 
-    /** top 확률 추출: score 우선, 없으면 topk[0].prob */
+    /*
+     * 함수 이름 : getTopProb
+     * 기능 : 응답에서 최상위 확률을 추출한다. score가 있으면 score를, 없으면 topk[0].prob를 반환한다.
+     * 매개변수 : 없음
+     * 반환값 : Double - 최상위 확률, 없으면 null
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public Double getTopProb() {
         if (score != null) return score;
         if (topk != null && !topk.isEmpty()) {
@@ -79,7 +93,14 @@ public class AiResponse {
         return null;
     }
 
-    /** Benign이면 false, 그 외는 true(가정) */
+    /*
+     * 함수 이름 : isRansomware
+     * 기능 : topFamily가 Benign이면 false, 그 외는 true를 반환한다.
+     * 매개변수 : 없음
+     * 반환값 : boolean - 랜섬웨어 여부
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public boolean isRansomware() {
         String topFamily = getTopFamily();
         if (topFamily == null || topFamily.isBlank()) return false;

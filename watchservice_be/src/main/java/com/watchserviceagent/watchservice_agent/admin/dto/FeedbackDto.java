@@ -25,6 +25,14 @@ public class FeedbackDto {
     private static final DateTimeFormatter FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
+    /*
+     * 함수 이름 : from
+     * 기능 : Feedback 도메인 객체를 FeedbackDto로 변환한다.
+     * 매개변수 : f - 변환할 Feedback 객체
+     * 반환값 : FeedbackDto - 변환된 DTO 객체
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public static FeedbackDto from(Feedback f) {
         return FeedbackDto.builder()
                 .id(f.getId())

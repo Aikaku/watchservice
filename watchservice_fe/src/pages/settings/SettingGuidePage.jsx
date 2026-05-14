@@ -62,6 +62,14 @@ const components = {
   ),
 };
 
+/*
+ * 함수 이름 : SettingGuidePage
+ * 기능 : 사용 가이드 조회 페이지 컴포넌트. 관리자가 작성한 가이드 내용을 마크다운 형식으로 표시한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingGuidePage() {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(true);

@@ -27,6 +27,14 @@ function AdminGuidePage() {
       .finally(() => setLoading(false));
   }, []);
 
+  /*
+   * 함수 이름 : handleSave
+   * 기능 : 저장 버튼 클릭 시 편집된 가이드 내용을 서버에 저장한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleSave = async () => {
     setSaving(true);
     setError('');

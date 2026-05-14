@@ -1,15 +1,33 @@
 /**
  * 파일 이름 : AdminMainPage.jsx
  * 기능 : 관리자 메인 페이지. 피드백/공지 관리 페이지로 진입하는 메뉴를 제공한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
  */
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { adminLogout } from '../../api/AdminApi';
 import { useToast } from '../../components/common/Toast';
 
+/*
+ * 함수 이름 : AdminMainPage
+ * 기능 : 관리자 메인 페이지 컴포넌트. 각 관리 메뉴로 이동하는 링크와 로그아웃 기능을 제공한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function AdminMainPage() {
   const toast = useToast();
 
+  /*
+   * 함수 이름 : handleLogout
+   * 기능 : 관리자 로그아웃을 처리하고 로그인 페이지로 이동한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const handleLogout = async () => {
     try {
       await adminLogout();

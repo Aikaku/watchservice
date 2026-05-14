@@ -49,6 +49,14 @@ public class UserAuthInterceptor implements HandlerInterceptor {
         return false;
     }
 
+    /*
+     * 함수 이름 : sendJsonUnauthorized
+     * 기능 : 401 Unauthorized 응답과 함께 JSON 오류 메시지를 반환한다.
+     * 매개변수 : response - HTTP 응답 객체
+     * 반환값 : 없음
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     private void sendJsonUnauthorized(HttpServletResponse response) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

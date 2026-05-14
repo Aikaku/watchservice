@@ -14,6 +14,14 @@ const ITEMS = [
   { icon: '📖', title: '사용 가이드', desc: 'WatchService 사용 방법 안내', path: '/settings/guide' },
 ];
 
+/*
+ * 함수 이름 : SettingHomePage
+ * 기능 : 설정 홈 페이지 컴포넌트. 각 설정 메뉴 카드를 표시하고 해당 설정 페이지로 이동할 수 있다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingHomePage() {
   const navigate = useNavigate();
 

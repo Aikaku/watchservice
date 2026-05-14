@@ -1,12 +1,22 @@
 /**
  * 파일 이름 : AdminAlertPage.jsx
  * 기능 : 관리자 전용 알림/탐지 관리 페이지. 전체 owner_key의 알림(notification)을 조회·삭제한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { fetchAdminAlerts, deleteAdminAlert } from '../../api/AdminApi';
 import { useToast } from '../../components/common/Toast';
 import { useConfirm } from '../../components/common/ConfirmModal';
 
+/*
+ * 함수 이름 : AdminAlertPage
+ * 기능 : 관리자 전용 알림/탐지 관리 페이지 컴포넌트. 전체 에이전트의 AI 분석 알림을 페이지네이션, 필터링하여 조회하고 삭제한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function AdminAlertPage() {
   const toast = useToast();
   const confirm = useConfirm();
@@ -24,6 +34,14 @@ function AdminAlertPage() {
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil((data.total || 0) / size)), [data.total, size]);
 
+  /*
+   * 함수 이름 : load
+   * 기능 : 현재 필터 조건으로 알림 목록을 서버에서 불러온다.
+   * 매개변수 : p - 조회할 페이지 번호 (기본값: 현재 page 상태)
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const load = async (p = page) => {
     setLoading(true);
     setError(null);
@@ -39,8 +57,24 @@ function AdminAlertPage() {
 
   useEffect(() => { load(1); setPage(1); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  /*
+   * 함수 이름 : handleSearch
+   * 기능 : 검색 버튼 클릭 시 첫 페이지에서 목록을 다시 불러온다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const handleSearch = () => { setPage(1); load(1); };
 
+  /*
+   * 함수 이름 : handleDelete
+   * 기능 : 특정 알림을 삭제한다. 확인 모달 후 삭제 요청을 보낸다.
+   * 매개변수 : id - 삭제할 알림 ID
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const handleDelete = async (id) => {
     if (!await confirm(`알림 #${id}를 삭제하시겠습니까?`)) return;
     try {
@@ -51,6 +85,14 @@ function AdminAlertPage() {
     }
   };
 
+  /*
+   * 함수 이름 : labelColor
+   * 기능 : AI 라벨(위험도)에 따른 색상 코드를 반환한다.
+   * 매개변수 : label - AI 라벨 (DANGER|WARNING|SAFE)
+   * 반환값 : string - 색상 코드
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const labelColor = (label) => {
     if (label === 'DANGER') return '#ef4444';
     if (label === 'WARNING') return '#eab308';

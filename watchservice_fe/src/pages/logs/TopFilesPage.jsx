@@ -8,6 +8,14 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchTopFiles } from '../../api/LogsApi';
 
+/*
+ * 함수 이름 : TopFilesPage
+ * 기능 : 자주 변경되는 파일 TOP 10 페이지 컴포넌트. 로그 기반으로 이벤트 발생 횟수가 많은 파일 순으로 표시한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/04/06
+ * 작성자 : 이상혁
+ */
 function TopFilesPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);

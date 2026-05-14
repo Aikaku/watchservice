@@ -51,12 +51,28 @@ function NotificationPage() {
     return Math.max(1, Math.ceil((Number(total) || 0) / size));
   }, [total, limit]);
 
+  /*
+   * 함수 이름 : handleClickItem
+   * 기능 : 알림 목록 항목 클릭 시 해당 알림 상세 페이지로 이동한다.
+   * 매개변수 : item - 클릭된 알림 객체
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const handleClickItem = (item) => {
     navigate(`/notifications/${item.id}`, {
       state: { notification: item },
     });
   };
 
+  /*
+   * 함수 이름 : handleSearch
+   * 기능 : 검색 버튼 클릭 시 현재 필터 조건으로 알림 목록을 재조회한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const handleSearch = () => {
     search();
   };

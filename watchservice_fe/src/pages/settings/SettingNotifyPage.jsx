@@ -5,6 +5,14 @@ const STORAGE_KEY = 'watchservice.notifySettings';
 
 const isElectron = typeof window !== 'undefined' && !!window.electronAPI;
 
+/*
+ * 함수 이름 : SettingNotifyPage
+ * 기능 : 알림 방식 설정 페이지 컴포넌트. 팝업·소리 알림 활성화 여부와 자동 실행 설정을 관리한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingNotifyPage() {
   const [popup, setPopup] = useState(true);
   const [sound, setSound] = useState(false);
@@ -47,6 +55,14 @@ function SettingNotifyPage() {
     return () => { mounted = false; };
   }, []);
 
+  /*
+   * 함수 이름 : handleAutoLaunchChange
+   * 기능 : 자동 실행 체크박스 변경 시 Electron loginItem 설정을 갱신한다.
+   * 매개변수 : e - 체크박스 변경 이벤트 객체
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleAutoLaunchChange = async (e) => {
     const enabled = e.target.checked;
     setAutoLaunch(enabled);
@@ -55,6 +71,14 @@ function SettingNotifyPage() {
     }
   };
 
+  /*
+   * 함수 이름 : handleSave
+   * 기능 : 저장 버튼 클릭 시 알림 방식 설정을 로컬 스토리지와 서버에 저장한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleSave = async () => {
     setLoading(true);
     const payload = { popup, sound };
@@ -71,6 +95,14 @@ function SettingNotifyPage() {
 
   const noteColor = { success: '#4ade80', error: '#f87171', info: '#60a5fa' }[note.type] || '#9ca3af';
 
+  /*
+   * 함수 이름 : ToggleRow
+   * 기능 : 레이블과 체크박스로 구성된 토글 행 컴포넌트를 렌더링한다.
+   * 매개변수 : label - 표시할 텍스트, checked - 체크 여부, onChange - 체크박스 변경 핸들러
+   * 반환값 : JSX.Element
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const ToggleRow = ({ label, checked, onChange }) => (
     <div style={{
       display: 'flex',

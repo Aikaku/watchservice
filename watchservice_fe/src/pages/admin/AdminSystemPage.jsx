@@ -1,15 +1,33 @@
 /**
  * 파일 이름 : AdminSystemPage.jsx
  * 기능 : 관리자 전용 시스템 상태 모니터링 페이지. DB 크기, 레코드 수, AI 서버·Watcher 상태를 표시한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
  */
 import React, { useState, useEffect } from 'react';
 import { fetchAdminSystem } from '../../api/AdminApi';
 
+/*
+ * 함수 이름 : AdminSystemPage
+ * 기능 : 관리자 전용 시스템 상태 모니터링 페이지 컴포넌트. DB 크기·레코드 수·AI 서버·Watcher 상태를 실시간으로 조회하여 표시한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function AdminSystemPage() {
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /*
+   * 함수 이름 : load
+   * 기능 : 서버에서 시스템 상태 정보를 불러온다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const load = async () => {
     setLoading(true);
     setError(null);

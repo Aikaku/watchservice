@@ -1,15 +1,33 @@
 /**
  * 파일 이름 : UserNoticePage.jsx
  * 기능 : 사용자 공지사항 페이지. 공지 목록을 읽기 전용으로 표시한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
  */
 import React, { useEffect, useState } from 'react';
 import { fetchNotices } from '../../api/AdminApi';
 
+/*
+ * 함수 이름 : UserNoticePage
+ * 기능 : 사용자 공지사항 페이지 컴포넌트. 공지사항 목록을 읽기 전용으로 조회하여 표시한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function UserNoticePage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /*
+   * 함수 이름 : load
+   * 기능 : 서버에서 공지사항 목록을 불러온다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const load = async () => {
     setLoading(true);
     setError(null);

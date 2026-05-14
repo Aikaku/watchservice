@@ -2,11 +2,27 @@ import React, { useState } from 'react';
 import { resetSettings } from '../../api/SettingApi';
 import { useConfirm } from '../../components/common/ConfirmModal';
 
+/*
+ * 함수 이름 : SettingResetPage
+ * 기능 : 초기화 페이지 컴포넌트. 모든 설정을 기본값으로 되돌리는 기능을 제공한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingResetPage() {
   const confirm = useConfirm();
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState({ text: '', type: '' });
 
+  /*
+   * 함수 이름 : handleReset
+   * 기능 : 초기화 버튼 클릭 시 로컬 스토리지와 서버 설정을 기본값으로 초기화한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleReset = async () => {
     const ok = await confirm('설정을 기본값으로 초기화할까요?');
     if (!ok) return;

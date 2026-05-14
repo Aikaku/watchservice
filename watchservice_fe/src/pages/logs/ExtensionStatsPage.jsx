@@ -15,6 +15,14 @@ const BAR_COLORS = [
   '#f472b6', '#4ade80', '#38bdf8', '#e879f9', '#a3e635',
 ];
 
+/*
+ * 함수 이름 : ExtensionStatsPage
+ * 기능 : 파일 확장자 분포 차트 페이지 컴포넌트. 로그에 기록된 파일 확장자별 이벤트 횟수를 가로 막대 차트로 표시한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/04/06
+ * 작성자 : 이상혁
+ */
 function ExtensionStatsPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);

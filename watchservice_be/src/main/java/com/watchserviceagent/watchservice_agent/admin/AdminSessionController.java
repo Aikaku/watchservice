@@ -22,6 +22,14 @@ public class AdminSessionController {
     private final NotificationRepository notificationRepository;
     private final SettingsRepository settingsRepository;
 
+    /*
+     * 함수 이름 : getSessions
+     * 기능 : 등록된 모든 에이전트(owner_key)별 로그, 알림, 감시 폴더, 예외 규칙 수를 조회한다.
+     * 매개변수 : 없음
+     * 반환값 : List<Map<String, Object>> - owner_key별 통계 목록 (로그 수 내림차순 정렬)
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     @GetMapping
     public List<Map<String, Object>> getSessions() {
         // 각 테이블에서 owner_key별 집계 수집
@@ -53,6 +61,14 @@ public class AdminSessionController {
         return result;
     }
 
+    /*
+     * 함수 이름 : toMap
+     * 기능 : 다형성 통계 객체 목록을 ownerKey → count 맵으로 변환한다.
+     * 매개변수 : stats - OwnerKeyStat 구현 목록
+     * 반환값 : Map<String, Long> - ownerKey별 카운트 맵
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     private Map<String, Long> toMap(List<? extends Object> stats) {
         Map<String, Long> map = new LinkedHashMap<>();
         for (Object stat : stats) {

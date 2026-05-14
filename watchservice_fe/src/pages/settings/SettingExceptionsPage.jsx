@@ -4,6 +4,14 @@ import { pickFolderPath } from '../../api/SettingApi';
 import { useToast } from '../../components/common/Toast';
 import { useConfirm } from '../../components/common/ConfirmModal';
 
+/*
+ * 함수 이름 : SettingExceptionsPage
+ * 기능 : 예외(화이트리스트) 설정 페이지 컴포넌트. 감시 대상에서 제외할 파일/폴더/확장자 규칙을 추가하고 삭제한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingExceptionsPage() {
   const toast = useToast();
   const confirm = useConfirm();
@@ -14,6 +22,14 @@ function SettingExceptionsPage() {
   const [memo, setMemo] = useState('');
   const [pickingFolder, setPickingFolder] = useState(false);
 
+  /*
+   * 함수 이름 : handlePickFolder
+   * 기능 : 폴더 선택 버튼 클릭 시 폴더 경로 선택 다이얼로그를 열고 선택된 경로를 패턴 입력란에 설정한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handlePickFolder = async () => {
     try {
       setPickingFolder(true);
@@ -28,6 +44,14 @@ function SettingExceptionsPage() {
     }
   };
 
+  /*
+   * 함수 이름 : handleAdd
+   * 기능 : 예외 규칙 추가 폼 제출 시 입력된 패턴으로 새 예외 규칙을 서버에 등록한다.
+   * 매개변수 : e - 폼 제출 이벤트 객체
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!pattern.trim()) {
@@ -39,6 +63,14 @@ function SettingExceptionsPage() {
     setMemo('');
   };
 
+  /*
+   * 함수 이름 : handleRemove
+   * 기능 : 예외 규칙을 삭제한다. 확인 모달 후 삭제 요청을 보낸다.
+   * 매개변수 : id - 삭제할 예외 규칙 ID
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleRemove = async (id) => {
     if (!await confirm('이 예외 규칙을 삭제하시겠습니까?')) return;
     removeException(id);

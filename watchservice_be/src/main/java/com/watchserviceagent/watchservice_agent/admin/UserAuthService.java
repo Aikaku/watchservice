@@ -23,6 +23,14 @@ public class UserAuthService {
     @Value("${user.password:}")
     private String userPassword;
 
+    /*
+     * 함수 이름 : init
+     * 기능 : 애플리케이션 시작 시 사용자 인증 활성화 여부 및 비밀번호 설정을 검증한다.
+     * 매개변수 : 없음
+     * 반환값 : 없음
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     @PostConstruct
     public void init() {
         if (authEnabled) {
@@ -38,14 +46,25 @@ public class UserAuthService {
         }
     }
 
+    /*
+     * 함수 이름 : isAuthEnabled
+     * 기능 : 사용자 인증 기능 활성화 여부를 반환한다.
+     * 매개변수 : 없음
+     * 반환값 : boolean - 인증 활성화 여부
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     public boolean isAuthEnabled() {
         return authEnabled;
     }
 
-    /**
-     * 비밀번호 검증.
-     * USER_PASSWORD가 BCrypt 해시($2a$/$2b$ 시작)이면 BCrypt 비교,
-     * 평문이면 직접 비교 (하위 호환).
+    /*
+     * 함수 이름 : authenticate
+     * 기능 : 비밀번호를 검증한다. BCrypt 해시이면 ENCODER로 비교하고, 평문이면 직접 비교한다.
+     * 매개변수 : password - 검증할 비밀번호
+     * 반환값 : boolean - 인증 성공 여부
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
      */
     public boolean authenticate(String password) {
         if (!authEnabled) return true;

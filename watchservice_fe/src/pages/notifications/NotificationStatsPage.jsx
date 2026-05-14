@@ -28,6 +28,14 @@ function NotificationStatsPage() {
   const [reportFrom, setReportFrom] = useState('');
   const [reportTo, setReportTo] = useState('');
 
+  /*
+   * 함수 이름 : load
+   * 기능 : 서버에서 알림 통계 데이터를 불러와 카운터 상태를 갱신한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const load = async () => {
     setLoading(true);
     setError(null);

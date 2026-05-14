@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
+/*
+ * 함수 이름 : SettingUpdatePage
+ * 기능 : 버전/업데이트 정보 페이지 컴포넌트. 현재 앱 버전을 표시하고 업데이트 여부를 확인한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingUpdatePage() {
   const isElectron = typeof window !== 'undefined' && typeof window.electronAPI?.checkForUpdates === 'function';
 
@@ -15,6 +23,14 @@ function SettingUpdatePage() {
     }
   }, [isElectron]);
 
+  /*
+   * 함수 이름 : handleCheck
+   * 기능 : 업데이트 확인 버튼 클릭 시 Electron API를 통해 최신 버전 여부를 확인한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleCheck = async () => {
     setChecking(true);
     setResult(null);
@@ -26,6 +42,14 @@ function SettingUpdatePage() {
     }
   };
 
+  /*
+   * 함수 이름 : renderResult
+   * 기능 : 업데이트 확인 결과에 따라 적절한 안내 카드를 렌더링하여 반환한다.
+   * 매개변수 : 없음
+   * 반환값 : JSX.Element | null
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const renderResult = () => {
     if (!result) return null;
 

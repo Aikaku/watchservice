@@ -19,18 +19,26 @@ public class AdminNoticeController {
 
     private final NoticeService noticeService;
 
-    /**
-     * 사용자/관리자 공용: 공지사항 목록 조회
-     * GET /api/notifications
+    /*
+     * 함수 이름 : getNotices
+     * 기능 : 사용자 및 관리자 공용 공지사항 목록을 조회한다.
+     * 매개변수 : 없음
+     * 반환값 : List<NoticeDto> - 공지사항 목록
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
      */
     @GetMapping("/api/notifications")
     public List<NoticeDto> getNotices() {
         return noticeService.getAll();
     }
 
-    /**
-     * 관리자: 공지사항 등록
-     * POST /api/admin/notifications
+    /*
+     * 함수 이름 : createNotice
+     * 기능 : 관리자 권한으로 공지사항을 등록한다.
+     * 매개변수 : req - 등록할 공지사항 요청 (title, content)
+     * 반환값 : 200 OK (성공), 400 Bad Request (content 누락)
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
      */
     @PostMapping("/api/admin/notifications")
     public ResponseEntity<?> createNotice(@RequestBody NoticeRequest req) {
@@ -41,9 +49,13 @@ public class AdminNoticeController {
         return ResponseEntity.ok().build();
     }
 
-    /**
-     * 관리자: 공지사항 삭제
-     * DELETE /api/admin/notifications/{id}
+    /*
+     * 함수 이름 : deleteNotice
+     * 기능 : 관리자 권한으로 특정 ID의 공지사항을 삭제한다.
+     * 매개변수 : id - 삭제할 공지사항 ID
+     * 반환값 : 204 No Content (성공), 404 Not Found (없을 때)
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
      */
     @DeleteMapping("/api/admin/notifications/{id}")
     public ResponseEntity<?> deleteNotice(@PathVariable long id) {

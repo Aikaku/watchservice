@@ -1,6 +1,20 @@
+/**
+ * 파일 이름 : SettingEmailPage.jsx
+ * 기능 : 이메일 알림 설정 페이지. DANGER 탐지 시 경보 메일을 수신할 주소를 설정한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 import React, { useEffect, useState } from 'react';
 import { fetchAlertEmail, updateAlertEmail, sendTestEmail } from '../../api/SettingApi';
 
+/*
+ * 함수 이름 : SettingEmailPage
+ * 기능 : 이메일 알림 설정 페이지 컴포넌트. 경보 수신 이메일 주소를 저장하고 테스트 메일을 발송한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function SettingEmailPage() {
   const [email, setEmail] = useState('');
   const [savedEmail, setSavedEmail] = useState('');
@@ -26,6 +40,14 @@ function SettingEmailPage() {
     return () => { mounted = false; };
   }, []);
 
+  /*
+   * 함수 이름 : handleSave
+   * 기능 : 저장 버튼 클릭 시 입력된 이메일 주소를 서버에 저장한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleSave = async () => {
     setLoading(true);
     setNote({ text: '', type: '' });
@@ -40,6 +62,14 @@ function SettingEmailPage() {
     }
   };
 
+  /*
+   * 함수 이름 : handleTest
+   * 기능 : 테스트 발송 버튼 클릭 시 입력된 이메일 주소로 테스트 메일을 발송한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleTest = async () => {
     const target = email.trim();
     if (!target) {

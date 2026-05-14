@@ -1,7 +1,21 @@
+/**
+ * 파일 이름 : SettingAuditPage.jsx
+ * 기능 : 파일 권한 보안 감사 페이지. 감시 폴더 내 위험 권한 파일을 탐지하고 결과를 표시한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 import React, { useEffect, useState } from 'react';
 import { fetchAuditResults, runAudit } from '../../api/SettingApi';
 import { useToast } from '../../components/common/Toast';
 
+/*
+ * 함수 이름 : SettingAuditPage
+ * 기능 : 파일 권한 보안 감사 페이지 컴포넌트. 감사 결과 조회 및 수동 감사 실행 기능을 제공한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function SettingAuditPage() {
   const { showToast } = useToast();
   const [items, setItems] = useState([]);
@@ -10,6 +24,14 @@ function SettingAuditPage() {
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
 
+  /*
+   * 함수 이름 : load
+   * 기능 : 서버에서 감사 결과 목록을 불러온다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const load = async () => {
     setLoading(true);
     try {
@@ -26,6 +48,14 @@ function SettingAuditPage() {
 
   useEffect(() => { load(); }, []);
 
+  /*
+   * 함수 이름 : handleRun
+   * 기능 : 파일 권한 보안 감사를 즉시 실행한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const handleRun = async () => {
     setRunning(true);
     try {

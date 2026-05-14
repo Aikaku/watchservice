@@ -1,15 +1,33 @@
 /**
  * 파일 이름 : AdminSessionPage.jsx
  * 기능 : 관리자 전용 세션(에이전트) 현황 페이지. 등록된 owner_key별 통계를 표시한다.
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
  */
 import React, { useState, useEffect } from 'react';
 import { fetchAdminSessions } from '../../api/AdminApi';
 
+/*
+ * 함수 이름 : AdminSessionPage
+ * 기능 : 관리자 전용 세션 현황 페이지 컴포넌트. 등록된 에이전트(owner_key)별 활동 통계를 조회하여 표시한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 시스템
+ */
 function AdminSessionPage() {
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  /*
+   * 함수 이름 : load
+   * 기능 : 서버에서 에이전트 세션 목록을 불러온다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 시스템
+   */
   const load = async () => {
     setLoading(true);
     setError(null);

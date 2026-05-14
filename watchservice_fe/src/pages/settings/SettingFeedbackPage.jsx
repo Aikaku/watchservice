@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { sendFeedback } from '../../api/SettingApi';
 import { useToast } from '../../components/common/Toast';
 
+/*
+ * 함수 이름 : SettingFeedbackPage
+ * 기능 : 문의/피드백 제출 페이지 컴포넌트. 버그 제보나 문의 내용을 입력하여 서버로 전송한다.
+ * 매개변수 : 없음
+ * 반환값 : JSX.Element
+ * 작성 날짜 : 2026/03/08
+ * 작성자 : 이상혁
+ */
 function SettingFeedbackPage() {
   const toast = useToast();
   const [name, setName] = useState('');
@@ -10,6 +18,14 @@ function SettingFeedbackPage() {
   const [loading, setLoading] = useState(false);
   const [note, setNote] = useState('');
 
+  /*
+   * 함수 이름 : handleSubmit
+   * 기능 : 피드백 폼 제출 시 입력된 내용을 서버로 전송한다.
+   * 매개변수 : e - 폼 제출 이벤트 객체
+   * 반환값 : 없음
+   * 작성 날짜 : 2026/03/08
+   * 작성자 : 이상혁
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!content.trim()) {

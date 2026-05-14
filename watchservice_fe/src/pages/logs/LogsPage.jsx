@@ -90,12 +90,28 @@ function LogsPage() {
     return Math.max(1, Math.ceil(total / (limit || 1)));
   }, [total, limit]);
 
+  /*
+   * 함수 이름 : handleLimitChange
+   * 기능 : 표시 개수 셀렉트 변경 시 limit 상태를 갱신한다.
+   * 매개변수 : e - 셀렉트 변경 이벤트 객체
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const handleLimitChange = (e) => {
     const value = Number(e.target.value) || 10;
     setLimit(value);
   };
 
   // UNKNOWN(라벨 없음)은 백엔드 필터가 정의되어 있지 않아서, 그 경우만 로컬로 거른다.
+  /*
+   * 함수 이름 : visibleLogs
+   * 기능 : riskFilter가 UNKNOWN일 때 aiLabel이 없는 로그만 필터링하여 반환한다.
+   * 매개변수 : 없음
+   * 반환값 : Array - 필터링된 로그 배열
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const visibleLogs = useMemo(() => {
     const list = logs || [];
 
@@ -105,6 +121,14 @@ function LogsPage() {
     return list;
   }, [logs, riskFilter]);
 
+  /*
+   * 함수 이름 : toggleSelect
+   * 기능 : 특정 로그 항목의 선택 상태를 토글한다.
+   * 매개변수 : id - 토글할 로그 ID
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const toggleSelect = (id) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -114,6 +138,14 @@ function LogsPage() {
     });
   };
 
+  /*
+   * 함수 이름 : toggleSelectAll
+   * 기능 : 현재 페이지 모든 로그 항목의 선택 상태를 일괄 토글한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const toggleSelectAll = () => {
     setSelectedIds((prev) => {
       const all = visibleLogs.map((l) => l.id);
@@ -123,6 +155,14 @@ function LogsPage() {
     });
   };
 
+  /*
+   * 함수 이름 : applySearch
+   * 기능 : 현재 UI 입력값을 서버 필터에 반영하고 첫 페이지부터 재조회한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const applySearch = () => {
     const aiLabel =
       riskFilter === 'SAFE' || riskFilter === 'WARNING' || riskFilter === 'DANGER'
@@ -143,6 +183,14 @@ function LogsPage() {
   };
 
   // ✅ 명세 14번: 필터 초기화
+  /*
+   * 함수 이름 : resetFilters
+   * 기능 : 모든 검색 필터를 초기 상태로 되돌리고 로그 목록을 재조회한다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const resetFilters = () => {
     // 1) UI 입력값 초기화
     setKeyword('');
@@ -166,6 +214,14 @@ function LogsPage() {
     search();
   };
 
+  /*
+   * 함수 이름 : handleRowClick
+   * 기능 : 로그 행 클릭 시 상세 정보를 조회하고 상세 모달을 열어 표시한다.
+   * 매개변수 : log - 클릭된 로그 객체
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const handleRowClick = async (log) => {
     try {
       const detail = await fetchLogDetail(log.id);
@@ -176,6 +232,14 @@ function LogsPage() {
     }
   };
 
+  /*
+   * 함수 이름 : handleDeleteOne
+   * 기능 : 단일 로그를 삭제한다. 확인 모달 후 삭제 요청을 보낸다.
+   * 매개변수 : id - 삭제할 로그 ID
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const handleDeleteOne = async (id) => {
     if (!await confirm(`로그(ID=${id})를 삭제할까요?`)) return;
 
@@ -193,6 +257,14 @@ function LogsPage() {
     }
   };
 
+  /*
+   * 함수 이름 : handleDeleteSelected
+   * 기능 : 선택된 여러 로그를 일괄 삭제한다. 확인 모달 후 삭제 요청을 보낸다.
+   * 매개변수 : 없음
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const handleDeleteSelected = async () => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) { toast('선택된 로그가 없습니다.', 'warn'); return; }
@@ -208,6 +280,14 @@ function LogsPage() {
     }
   };
 
+  /*
+   * 함수 이름 : handleExport
+   * 기능 : 선택된 로그 또는 현재 필터 기준으로 CSV/JSON 형식으로 내보낸다.
+   * 매개변수 : format - 내보내기 형식 ('CSV' 또는 'JSON')
+   * 반환값 : 없음
+   * 작성 날짜 : 2025/12/17
+   * 작성자 : 이상혁
+   */
   const handleExport = async (format) => {
     const ids = Array.from(selectedIds);
 

@@ -39,6 +39,14 @@ public class AdminSystemController {
             .connectTimeout(Duration.ofSeconds(2))
             .build();
 
+    /*
+     * 함수 이름 : getSystemStatus
+     * 기능 : DB 크기, 레코드 수, Watcher 상태, AI 서버 연결 상태를 포함한 시스템 현황을 조회한다.
+     * 매개변수 : 없음
+     * 반환값 : Map<String, Object> - 시스템 상태 정보
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     @GetMapping
     public Map<String, Object> getSystemStatus() {
         Map<String, Object> result = new LinkedHashMap<>();
@@ -62,6 +70,14 @@ public class AdminSystemController {
         return result;
     }
 
+    /*
+     * 함수 이름 : checkAiServer
+     * 기능 : AI 서버에 HTTP GET 요청을 보내 연결 가능 여부를 확인한다. 타임아웃은 2초.
+     * 매개변수 : 없음
+     * 반환값 : "UP" (정상), "DOWN" (연결 실패)
+     * 작성 날짜 : 2026/03/08
+     * 작성자 : 시스템
+     */
     private String checkAiServer() {
         try {
             // AI 서버의 base URL 추출 (http://localhost:8001)
