@@ -131,3 +131,6 @@ org.springframework.web.HttpRequestMethodNotSupportedException: Request method '
 2026-05-15 00:17:17.238 [http-nio-8080-exec-4] INFO  c.w.w.settings.SettingsController - [SettingsController] GET /settings/folders -> 0건
 2026-05-15 00:17:17.238 [http-nio-8080-exec-7] INFO  c.w.w.dashboard.DashboardController - [DashboardController] /dashboard/summary -> DashboardSummaryResponse(status=SAFE, statusLabel=안전, lastEventTime=-, dangerCount=0, warningCount=0, totalCount=0, watchedPath=-, guidance=null)
 2026-05-15 00:38:31.891 [HikariPool-1:housekeeper] WARN  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Retrograde clock change detected (housekeeper delta=29s868ms), soft-evicting connections from pool.
+2026-05-15 01:05:06.957 [LogWriterWorker-Thread] INFO  c.w.w.storage.LogWriterWorker - [LogWriterWorker] 워커 스레드 인터럽트, 종료 준비
+2026-05-15 01:05:06.959 [LogWriterWorker-Thread] INFO  c.w.w.storage.LogWriterWorker - [LogWriterWorker] 워커 루프 종료
+2026-05-15 01:05:06.959 [SpringApplicationShutdownHook] INFO  c.w.w.storage.LogWriterWorker - [LogWriterWorker] 워커 스레드 종료
