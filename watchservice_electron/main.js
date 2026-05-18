@@ -259,7 +259,7 @@ function createTray() {
       {
         label: '대시보드 열기',
         click: () => {
-          if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+          if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.show(); mainWindow.focus(); }
         },
       },
       { type: 'separator' },
@@ -282,7 +282,7 @@ function createTray() {
               });
               isWatching = false;
             } else {
-              if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+              if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.show(); mainWindow.focus(); }
             }
           } catch (_) {}
           tray.setContextMenu(buildContextMenu());
@@ -310,11 +310,11 @@ function createTray() {
 
   // 단일 클릭으로 창 복원
   tray.on('click', () => {
-    if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+    if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.show(); mainWindow.focus(); }
   });
 
   tray.on('double-click', () => {
-    if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+    if (mainWindow && !mainWindow.isDestroyed()) { mainWindow.show(); mainWindow.focus(); }
   });
 }
 
@@ -554,7 +554,7 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   // macOS Dock 클릭
-  if (mainWindow) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.show();
   }
 });
