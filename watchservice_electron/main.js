@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, nativeImage, shell, screen, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, Menu, nativeImage, shell, screen, ipcMain, session } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 const http = require('http');
@@ -445,42 +445,47 @@ function showEmergencyWindow(notification) {
 function startDangerPolling() {
   if (dangerPollInterval) return;
 
-  dangerPollInterval = setInterval(() => {
-    const req = http.get(
-      `http://localhost:${PORT}/notifications?level=DANGER&size=1&page=1&sort=createdAt,desc`,
-      { headers: { Accept: 'application/json' } },
-      (res) => {
-        let body = '';
-        res.on('data', (chunk) => { body += chunk; });
-        res.on('end', () => {
-          try {
-            const json = JSON.parse(body);
-            // ApiResponse 래퍼 자동 unwrap
-            const payload = (json && 'data' in json) ? json.data : json;
-            const items = payload?.items ?? [];
-            if (items.length === 0) return;
+  dangerPollInterval = setInterval(async () => {
+    try {
+      // BrowserWindow 세션 쿠키를 가져와 동일한 ownerKey로 조회
+      const cookies = await session.defaultSession.cookies.get({ url: `http://localhost:${PORT}` });
+      const jsessionid = cookies.find(c => c.name === 'JSESSIONID');
+      const cookieHeader = jsessionid ? `JSESSIONID=${jsessionid.value}` : '';
 
-            const latest = items[0];
-            const latestId = latest.id ?? latest.notificationId;
-            if (latestId === undefined || latestId === null) return;
+      const req = http.get(
+        `http://localhost:${PORT}/notifications?level=DANGER&size=1&sort=createdAt,desc`,
+        { headers: { Accept: 'application/json', ...(cookieHeader ? { Cookie: cookieHeader } : {}) } },
+        (res) => {
+          let body = '';
+          res.on('data', (chunk) => { body += chunk; });
+          res.on('end', () => {
+            try {
+              const json = JSON.parse(body);
+              const payload = (json && 'data' in json) ? json.data : json;
+              const items = payload?.items ?? [];
+              if (items.length === 0) return;
 
-            if (lastDangerNotificationId === -1) {
-              // 첫 폴링 — 기준 ID 저장만, 경보 없음
-              lastDangerNotificationId = latestId;
-              return;
-            }
+              const latest = items[0];
+              const latestId = latest.id ?? latest.notificationId;
+              if (latestId === undefined || latestId === null) return;
 
-            if (latestId !== lastDangerNotificationId) {
-              lastDangerNotificationId = latestId;
-              showEmergencyWindow(latest);
-            }
-          } catch (_) { /* JSON 파싱 실패 무시 */ }
-        });
-      }
-    );
-    req.on('error', () => { /* 폴링 오류 무시 */ });
-    req.setTimeout(2000, () => req.destroy());
-  }, 3000); // 3초 간격
+              if (lastDangerNotificationId === -1) {
+                lastDangerNotificationId = latestId;
+                return;
+              }
+
+              if (latestId !== lastDangerNotificationId) {
+                lastDangerNotificationId = latestId;
+                showEmergencyWindow(latest);
+              }
+            } catch (_) { /* JSON 파싱 실패 무시 */ }
+          });
+        }
+      );
+      req.on('error', () => {});
+      req.setTimeout(2000, () => req.destroy());
+    } catch (_) {}
+  }, 3000);
 }
 
 // ──────────────────────────────────────────────
