@@ -40,7 +40,7 @@ public class GeminiAdviceService {
     @Value("${gemini.model:gemini-2.5-flash}")
     private String model;
 
-    @Value("${gemini.timeout-ms:2500}")
+    @Value("${gemini.timeout-ms:15000}")
     private int timeoutMs;
 
     /*
@@ -236,9 +236,18 @@ SOC 방어조치 전문가. 수비 관점 조치만 작성(공격정보·코드 
         String raw = res.getBody();
         if (raw == null || raw.isBlank()) return null;
 
-        // candidates[0].content.parts[0].text 추출
+        // candidates[0].content.parts[0].text 추출 + usageMetadata 로그
         try {
             JsonNode root = objectMapper.readTree(raw);
+
+            JsonNode usage = root.path("usageMetadata");
+            if (!usage.isMissingNode()) {
+                log.info("[GeminiAdviceService] usage: promptTokens={} candidatesTokens={} totalTokens={}",
+                        usage.path("promptTokenCount").asInt(-1),
+                        usage.path("candidatesTokenCount").asInt(-1),
+                        usage.path("totalTokenCount").asInt(-1));
+            }
+
             JsonNode candidates = root.path("candidates");
             if (candidates.isArray() && !candidates.isEmpty()) {
                 JsonNode parts = candidates.get(0).path("content").path("parts");
