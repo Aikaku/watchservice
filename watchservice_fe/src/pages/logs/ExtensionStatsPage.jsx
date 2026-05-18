@@ -23,7 +23,7 @@ const BAR_COLORS = [
  * 작성 날짜 : 2026/04/06
  * 작성자 : 이상혁
  */
-function ExtensionStatsPage() {
+function ExtensionStatsPage({ embedded = false }) {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,15 +50,18 @@ function ExtensionStatsPage() {
   const maxCount = items.length > 0 ? items[0].count : 1;
 
   return (
-    <div className="page-container">
-      <h1>파일 확장자 분포</h1>
-      <p style={{ color: '#9ca3af', marginBottom: 24 }}>
-        감시 로그에 기록된 파일 확장자별 이벤트 횟수 (상위 20개)
-      </p>
-
-      <button className="btn" style={{ marginBottom: 24 }} onClick={() => navigate('/logs')}>
-        로그 목록으로 돌아가기
-      </button>
+    <div className={embedded ? undefined : 'page-container'}>
+      {!embedded && <h1>파일 확장자 분포</h1>}
+      {!embedded && (
+        <p style={{ color: '#9ca3af', marginBottom: 24 }}>
+          감시 로그에 기록된 파일 확장자별 이벤트 횟수 (상위 20개)
+        </p>
+      )}
+      {!embedded && (
+        <button className="btn" style={{ marginBottom: 24 }} onClick={() => navigate('/logs')}>
+          로그 목록으로 돌아가기
+        </button>
+      )}
 
       {loading && <p>불러오는 중...</p>}
       {error && <p style={{ color: '#f87171' }}>오류: {error}</p>}

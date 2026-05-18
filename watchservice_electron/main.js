@@ -28,6 +28,7 @@ let springErrorReason = null;
 let emergencyWindow = null;
 let lastDangerNotificationId = -1;
 let dangerPollInterval = null;
+let isWatching = false;
 
 // ──────────────────────────────────────────────
 // Spring Boot JAR 경로 결정
@@ -258,10 +259,33 @@ function createTray() {
       {
         label: '대시보드 열기',
         click: () => {
-          if (mainWindow) {
-            mainWindow.show();
-            mainWindow.focus();
-          }
+          if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+        },
+      },
+      { type: 'separator' },
+      {
+        label: isWatching ? '감시 중지' : '감시 시작',
+        click: async () => {
+          try {
+            const cookies = await session.defaultSession.cookies.get({ url: `http://localhost:${PORT}` });
+            const jsessionid = cookies.find(c => c.name === 'JSESSIONID');
+            const cookieHeader = jsessionid ? `JSESSIONID=${jsessionid.value}` : '';
+            if (isWatching) {
+              await new Promise((resolve, reject) => {
+                const req = http.request(
+                  `http://localhost:${PORT}/watcher/stop`,
+                  { method: 'POST', headers: { 'Content-Type': 'application/json', ...(cookieHeader ? { Cookie: cookieHeader } : {}) } },
+                  (res) => { res.resume(); res.on('end', resolve); }
+                );
+                req.on('error', reject);
+                req.end();
+              });
+              isWatching = false;
+            } else {
+              if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+            }
+          } catch (_) {}
+          tray.setContextMenu(buildContextMenu());
         },
       },
       { type: 'separator' },
@@ -276,22 +300,21 @@ function createTray() {
       { type: 'separator' },
       {
         label: '종료',
-        click: () => {
-          app.isQuiting = true;
-          app.quit();
-        },
+        click: () => { app.isQuiting = true; app.quit(); },
       },
     ]);
   };
 
-  tray.setToolTip('WatchService Agent — 감시 중');
+  tray.setToolTip('WatchService Agent');
   tray.setContextMenu(buildContextMenu());
 
+  // 단일 클릭으로 창 복원
+  tray.on('click', () => {
+    if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
+  });
+
   tray.on('double-click', () => {
-    if (mainWindow) {
-      mainWindow.show();
-      mainWindow.focus();
-    }
+    if (mainWindow) { mainWindow.show(); mainWindow.focus(); }
   });
 }
 
@@ -484,6 +507,28 @@ function startDangerPolling() {
       );
       req.on('error', () => {});
       req.setTimeout(2000, () => req.destroy());
+
+      // 감시 상태 동기화 → 트레이 메뉴 업데이트
+      const statusReq = http.get(
+        `http://localhost:${PORT}/watcher/status`,
+        { headers: { Accept: 'application/json', ...(cookieHeader ? { Cookie: cookieHeader } : {}) } },
+        (res) => {
+          let sb = '';
+          res.on('data', (c) => { sb += c; });
+          res.on('end', () => {
+            try {
+              const sj = JSON.parse(sb);
+              const running = sj?.data?.running ?? sj?.running ?? false;
+              if (running !== isWatching) {
+                isWatching = running;
+                if (tray && !tray.isDestroyed()) tray.setContextMenu(buildContextMenu());
+              }
+            } catch (_) {}
+          });
+        }
+      );
+      statusReq.on('error', () => {});
+      statusReq.setTimeout(2000, () => statusReq.destroy());
     } catch (_) {}
   }, 3000);
 }

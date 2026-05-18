@@ -5,7 +5,6 @@
  * 작성자 : 시스템
  */
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useLogs } from '../../hooks/UseLogs';
 import { useToast } from '../../components/common/Toast';
 import { useConfirm } from '../../components/common/ConfirmModal';
@@ -13,6 +12,8 @@ import LogFilterBar from '../../components/logs/LogFilterBar';
 import LogTable from '../../components/logs/LogTable';
 import LogDetailModal from '../../components/logs/LogDetailModal';
 import { deleteLog, deleteLogs, exportLogs, fetchLogDetail } from '../../api/LogsApi';
+import TopFilesPage from './TopFilesPage';
+import ExtensionStatsPage from './ExtensionStatsPage';
 
 /**
  * 함수 이름 : downloadText
@@ -54,7 +55,6 @@ function downloadJson(filename, obj) {
  * 작성자 : 시스템
  */
 function LogsPage() {
-  const navigate = useNavigate();
   const toast = useToast();
   const confirm = useConfirm();
   const {
@@ -84,6 +84,7 @@ function LogsPage() {
 
   const [selectedLog, setSelectedLog] = useState(null);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [activeTab, setActiveTab] = useState('logs');
 
   const totalPages = useMemo(() => {
     if (typeof total !== 'number' || total < 0) return null;
@@ -324,6 +325,17 @@ function LogsPage() {
     }
   };
 
+  const tabStyle = (tab) => ({
+    padding: '6px 16px',
+    borderRadius: 6,
+    border: 'none',
+    cursor: 'pointer',
+    fontWeight: activeTab === tab ? 700 : 400,
+    background: activeTab === tab ? '#3b82f6' : '#1f2937',
+    color: activeTab === tab ? '#fff' : '#9ca3af',
+    fontSize: 13,
+  });
+
   return (
     <div className="page-container">
       <div>
@@ -333,80 +345,87 @@ function LogsPage() {
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
-        <label>
-          표시 개수:&nbsp;
-          <select value={limit} onChange={handleLimitChange}>
-            <option value={10}>10</option>
-            <option value={30}>30</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
-          </select>
-        </label>
-
-        <button className="btn" onClick={() => navigate('/logs/top-files')}>
-          자주 변경 파일 TOP 10
-        </button>
-        <button className="btn" onClick={() => navigate('/logs/extension-stats')}>
-          확장자 분포
-        </button>
-
-        <button className="btn" onClick={() => handleExport('CSV')}>
-          CSV 내보내기
-        </button>
-        <button className="btn" onClick={() => handleExport('JSON')}>
-          JSON 내보내기
-        </button>
-
-        <button className="btn" onClick={handleDeleteSelected} disabled={selectedIds.size === 0}>
-          선택 삭제
-        </button>
-
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button className="btn" disabled={page <= 0} onClick={() => setPage(page - 1)}>
-            이전
-          </button>
-          <span>
-            페이지: {page + 1}
-            {totalPages ? ` / ${totalPages}` : ''}
-          </span>
-          <button
-            className="btn"
-            disabled={totalPages ? page + 1 >= totalPages : false}
-            onClick={() => setPage(page + 1)}
-          >
-            다음
-          </button>
-        </div>
+      {/* 탭 */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <button style={tabStyle('logs')} onClick={() => setActiveTab('logs')}>로그 목록</button>
+        <button style={tabStyle('top-files')} onClick={() => setActiveTab('top-files')}>자주 변경 파일 TOP 10</button>
+        <button style={tabStyle('ext-stats')} onClick={() => setActiveTab('ext-stats')}>확장자 분포</button>
       </div>
 
-      <LogFilterBar
-        keyword={keyword}
-        setKeyword={setKeyword}
-        riskFilter={riskFilter}
-        setRiskFilter={setRiskFilter}
-        from={from}
-        setFrom={setFrom}
-        to={to}
-        setTo={setTo}
-        sort={sort}
-        setSort={setSort}
-        onSearch={applySearch}
-        onReset={resetFilters}
-        onRefresh={refresh}
-      />
+      {activeTab === 'top-files' && <TopFilesPage embedded />}
+      {activeTab === 'ext-stats' && <ExtensionStatsPage embedded />}
 
-      {loading && <p>로그를 불러오는 중...</p>}
-      {error && <p style={{ color: 'red' }}>오류: {error.message}</p>}
+      {activeTab === 'logs' && (
+        <>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12, flexWrap: 'wrap' }}>
+            <label>
+              표시 개수:&nbsp;
+              <select value={limit} onChange={handleLimitChange}>
+                <option value={10}>10</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </label>
 
-      {!loading && !error && (
-        <LogTable
-          logs={visibleLogs}
-          onRowClick={handleRowClick}
-          selectedIds={selectedIds}
-          onToggleSelect={toggleSelect}
-          onToggleSelectAll={toggleSelectAll}
-        />
+            <button className="btn" onClick={() => handleExport('CSV')}>
+              CSV 내보내기
+            </button>
+            <button className="btn" onClick={() => handleExport('JSON')}>
+              JSON 내보내기
+            </button>
+
+            <button className="btn" onClick={handleDeleteSelected} disabled={selectedIds.size === 0}>
+              선택 삭제
+            </button>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="btn" disabled={page <= 0} onClick={() => setPage(page - 1)}>
+                이전
+              </button>
+              <span>
+                페이지: {page + 1}
+                {totalPages ? ` / ${totalPages}` : ''}
+              </span>
+              <button
+                className="btn"
+                disabled={totalPages ? page + 1 >= totalPages : false}
+                onClick={() => setPage(page + 1)}
+              >
+                다음
+              </button>
+            </div>
+          </div>
+
+          <LogFilterBar
+            keyword={keyword}
+            setKeyword={setKeyword}
+            riskFilter={riskFilter}
+            setRiskFilter={setRiskFilter}
+            from={from}
+            setFrom={setFrom}
+            to={to}
+            setTo={setTo}
+            sort={sort}
+            setSort={setSort}
+            onSearch={applySearch}
+            onReset={resetFilters}
+            onRefresh={refresh}
+          />
+
+          {loading && <p>로그를 불러오는 중...</p>}
+          {error && <p style={{ color: 'red' }}>오류: {error.message}</p>}
+
+          {!loading && !error && (
+            <LogTable
+              logs={visibleLogs}
+              onRowClick={handleRowClick}
+              selectedIds={selectedIds}
+              onToggleSelect={toggleSelect}
+              onToggleSelectAll={toggleSelectAll}
+            />
+          )}
+        </>
       )}
 
       <LogDetailModal

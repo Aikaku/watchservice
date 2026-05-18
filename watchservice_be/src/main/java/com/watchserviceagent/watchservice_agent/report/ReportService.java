@@ -58,8 +58,8 @@ public class ReportService {
         long warning = items.stream().filter(n -> "WARNING".equals(n.getAiLabel())).count();
         long safe    = items.stream().filter(n -> "SAFE".equals(n.getAiLabel())).count();
 
-        String reportFrom = from != null ? from : "전체";
-        String reportTo   = to   != null ? to   : "전체";
+        String reportFrom = from != null ? from : "ALL";
+        String reportTo   = to   != null ? to   : "ALL";
 
         try (PDDocument doc = new PDDocument()) {
             // ─── 1페이지: 요약 ───
@@ -272,7 +272,7 @@ public class ReportService {
 
     private String truncate(String s, int max) {
         if (s == null) return "";
-        return s.length() > max ? s.substring(0, max - 1) + "…" : s;
+        return s.length() > max ? s.substring(0, max - 1) + "..." : s;
     }
 
     private Long parseFromEpoch(String from) {

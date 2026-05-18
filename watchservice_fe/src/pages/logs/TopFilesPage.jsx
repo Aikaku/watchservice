@@ -16,7 +16,7 @@ import { fetchTopFiles } from '../../api/LogsApi';
  * 작성 날짜 : 2026/04/06
  * 작성자 : 이상혁
  */
-function TopFilesPage() {
+function TopFilesPage({ embedded = false }) {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -42,15 +42,18 @@ function TopFilesPage() {
   const maxCount = items.length > 0 ? items[0].changeCount : 1;
 
   return (
-    <div className="page-container">
-      <h1>자주 변경되는 파일 TOP 10</h1>
-      <p style={{ color: '#9ca3af', marginBottom: 24 }}>
-        누적 이벤트(CREATE / MODIFY / DELETE 등) 횟수 기준
-      </p>
-
-      <button className="btn" style={{ marginBottom: 24 }} onClick={() => navigate('/logs')}>
-        로그 목록으로 돌아가기
-      </button>
+    <div className={embedded ? undefined : 'page-container'}>
+      {!embedded && <h1>자주 변경되는 파일 TOP 10</h1>}
+      {!embedded && (
+        <p style={{ color: '#9ca3af', marginBottom: 24 }}>
+          누적 이벤트(CREATE / MODIFY / DELETE 등) 횟수 기준
+        </p>
+      )}
+      {!embedded && (
+        <button className="btn" style={{ marginBottom: 24 }} onClick={() => navigate('/logs')}>
+          로그 목록으로 돌아가기
+        </button>
+      )}
 
       {loading && <p>불러오는 중...</p>}
       {error && <p style={{ color: '#f87171' }}>오류: {error}</p>}
