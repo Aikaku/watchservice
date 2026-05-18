@@ -7,7 +7,6 @@ const ITEMS = [
   { icon: '🔔', title: '알림 방식', desc: '팝업/소리 설정', path: '/settings/notify' },
   { icon: '📧', title: '이메일 알림', desc: 'DANGER 탐지 시 이메일 경보', path: '/settings/email' },
   { icon: '🕐', title: '감시 스케줄', desc: '요일·시간대별 자동 활성화', path: '/settings/schedule' },
-  { icon: '🔒', title: '파일 권한 감사', desc: 'others 쓰기·실행 권한 파일 탐지', path: '/settings/audit' },
   { icon: '🔄', title: '초기화', desc: '설정/캐시 초기화', path: '/settings/reset' },
   { icon: '⬆️', title: '업데이트', desc: '버전/업데이트 확인', path: '/settings/update' },
   { icon: '💬', title: '문의/피드백', desc: '버그·문의 제출', path: '/settings/feedback' },
