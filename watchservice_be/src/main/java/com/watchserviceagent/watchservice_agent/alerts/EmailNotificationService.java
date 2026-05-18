@@ -8,7 +8,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -38,7 +37,6 @@ public class EmailNotificationService {
      * DANGER 알림 이메일을 비동기로 발송한다.
      * recipientEmail 또는 SMTP 계정이 비어 있으면 발송을 건너뛴다.
      */
-    @Async
     public void sendDangerAlert(String recipientEmail, Notification notification) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
             log.warn("[EmailNotificationService] 수신 이메일 미설정 — 발송 건너뜀");
@@ -60,7 +58,7 @@ public class EmailNotificationService {
 
             mailSender.send(message);
             log.info("[EmailNotificationService] DANGER 알림 이메일 발송 완료 → {}", recipientEmail);
-        } catch (MessagingException e) {
+        } catch (Exception e) {
             log.error("[EmailNotificationService] 이메일 발송 실패 → {}", recipientEmail, e);
         }
     }
