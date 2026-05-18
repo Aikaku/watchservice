@@ -137,8 +137,6 @@ public class GeminiAdviceService {
         String featureSummary = summarizePayload(payload);
 
         return """
-한국어로 간단하게 작성.
-
 탐지: %s score=%s %s
 피처: %s
 
@@ -157,6 +155,7 @@ public class GeminiAdviceService {
 - 임의 삭제나 검증되지 않은 복구 프로그램 실행을 권하지 마세요.
 - 몸값 지불을 권하지 마세요.
 - 비전공자가 이해할 수 있는 쉬운 말로 설명하세요.
+- 한국어로 간단하게 작성하세요.
 """.formatted(label, score, detail, featureSummary);
     }
 

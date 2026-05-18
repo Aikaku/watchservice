@@ -2,24 +2,17 @@ package com.watchserviceagent.watchservice_agent.common.util;
 
 import jakarta.servlet.http.HttpSession;
 
-import java.util.UUID;
-
 /**
- * HTTP 세션 기반 ownerKey 유틸리티.
- * 세션에 ownerKey가 없으면 새 UUID를 발급하여 세션에 저장한다.
- * 컨트롤러에서 HttpSession을 주입받아 사용한다.
+ * ownerKey 유틸리티.
+ * 단일 사용자 데스크탑 앱이므로 항상 고정 키 "default"를 반환한다.
+ * 이를 통해 서버 재시작 후에도 이메일·감시 폴더·예외 규칙 등 설정이 유지된다.
  */
 public class OwnerKeyUtil {
 
-    private static final String SESSION_KEY = "OWNER_KEY";
+    private static final String DEFAULT_OWNER = "default";
 
     public static String getOrCreate(HttpSession session) {
-        String ownerKey = (String) session.getAttribute(SESSION_KEY);
-        if (ownerKey == null || ownerKey.isBlank()) {
-            ownerKey = UUID.randomUUID().toString();
-            session.setAttribute(SESSION_KEY, ownerKey);
-        }
-        return ownerKey;
+        return DEFAULT_OWNER;
     }
 
     private OwnerKeyUtil() {}
