@@ -63,7 +63,7 @@
     <div><span>대응 가이드:</span><br><strong id="guidance">대시보드에서 상세 내용을 확인하세요.</strong></div>
   </div>
 
-  <button class="btn" onclick="window.close()">확인</button>
+  <button class="btn" onclick="if(window.electronAPI){window.electronAPI.closeEmergencyWindow();}else{window.close();}">확인</button>
   <p class="bottom-note">이 창을 닫으면 대시보드에서 상세 내용을 확인할 수 있습니다.</p>
 
   <script>

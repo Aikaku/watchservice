@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
   closeWindow: () => ipcRenderer.send('window-close'),
+  closeEmergencyWindow: () => ipcRenderer.send('close-emergency-window'),
   getLoginItem: () => ipcRenderer.invoke('get-login-item'),
   setLoginItem: (enabled) => ipcRenderer.invoke('set-login-item', enabled),
 });

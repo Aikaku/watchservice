@@ -287,6 +287,10 @@ ipcMain.on('window-close', () => {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.close();
 });
 
+ipcMain.on('close-emergency-window', () => {
+  if (emergencyWindow && !emergencyWindow.isDestroyed()) emergencyWindow.close();
+});
+
 ipcMain.handle('check-for-updates', () => {
   return new Promise((resolve) => {
     const currentVersion = app.getVersion();
@@ -395,7 +399,10 @@ function showEmergencyWindow(notification) {
     alwaysOnTop: true,
     frame: false,
     skipTaskbar: false,
-    webPreferences: { contextIsolation: true },
+    webPreferences: {
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+    },
   });
 
   emergencyWindow.loadFile(

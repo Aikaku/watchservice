@@ -7,6 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * 클래스 이름 : WatcherController
  * 기능 : 파일 감시 시작/중지 요청을 처리하는 REST API 엔드포인트를 제공한다.
@@ -65,5 +67,11 @@ public class WatcherController {
             return ResponseEntity.internalServerError()
                     .body("[Watcher] 감시 중지 실패: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Boolean>> status(HttpSession session) {
+        String ownerKey = OwnerKeyUtil.getOrCreate(session);
+        return ResponseEntity.ok(Map.of("running", watcherService.isRunning(ownerKey)));
     }
 }

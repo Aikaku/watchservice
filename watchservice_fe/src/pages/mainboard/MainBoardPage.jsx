@@ -4,8 +4,8 @@
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { startWatcher, stopWatcher } from '../../api/WatcherApi';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { startWatcher, stopWatcher, getWatcherStatus } from '../../api/WatcherApi';
 import { useWatchedFolders } from '../../hooks/UseWatchedFolders';
 import { useLogs } from '../../hooks/UseLogs';
 import { fetchDashboardSummary } from '../../api/DashboardApi';
@@ -53,39 +53,44 @@ function MainBoardPage() {
   const [showFolderPicker, setShowFolderPicker] = useState(false);
 
   /** 최근 이벤트 훅 (5건) */
-  const { logs: recentLogs, loading: logsLoading, error: logsError } = useLogs(5);
+  const { logs: recentLogs, loading: logsLoading, error: logsError, refresh } = useLogs(5);
 
-  /**
-   * 함수 이름 : useEffect (요약 불러오기)
-   * 기능 : 컴포넌트 마운트 시 대시보드 요약 정보를 불러온다.
-   * 매개변수 : 없음
-   * 반환값 : 없음
-   * 작성 날짜 : 2025/12/17
-   * 작성자 : 시스템
-   */
-  useEffect(() => {
-    const loadSummary = async () => {
-      try {
-        setSummaryLoading(true);
-        setSummaryError(null);
+  const loadSummary = useCallback(async () => {
+    try {
+      setSummaryLoading(true);
+      setSummaryError(null);
 
-        const data = await fetchDashboardSummary();
-        if (!data) return;
+      const data = await fetchDashboardSummary();
+      if (!data) return;
 
-        setProtectionStatus(data.statusLabel || '안전');
-        setStatusCode(data.status || 'SAFE');
-        setLastEventTime(data.lastEventTime || 'N/A');
-        setGuidance(data.guidance || null);
-      } catch (e) {
-        console.error('fetchDashboardSummary error:', e);
-        setSummaryError(e);
-      } finally {
-        setSummaryLoading(false);
-      }
-    };
-
-    loadSummary();
+      setProtectionStatus(data.statusLabel || '안전');
+      setStatusCode(data.status || 'SAFE');
+      setLastEventTime(data.lastEventTime || 'N/A');
+      setGuidance(data.guidance || null);
+    } catch (e) {
+      console.error('fetchDashboardSummary error:', e);
+      setSummaryError(e);
+    } finally {
+      setSummaryLoading(false);
+    }
   }, []);
+
+  // 마운트 시 초기 로드 + 감시 상태 복원
+  useEffect(() => {
+    loadSummary();
+    getWatcherStatus()
+      .then(data => { if (data?.running) setIsWatching(true); })
+      .catch(() => {});
+  }, [loadSummary]);
+
+  // 5초 폴링: 탐지 발생 시 자동 반영
+  useEffect(() => {
+    const id = setInterval(() => {
+      loadSummary();
+      refresh();
+    }, 5000);
+    return () => clearInterval(id);
+  }, [loadSummary, refresh]);
 
   /**
    * 함수 이름 : recentEvents (useMemo)

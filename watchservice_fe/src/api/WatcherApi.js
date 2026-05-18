@@ -4,7 +4,7 @@
  * 작성 날짜 : 2025/12/17
  * 작성자 : 시스템
  */
-import { post } from './HttpClient';
+import { get, post } from './HttpClient';
 
 /**
  * 함수 이름 : startWatcher
@@ -30,4 +30,8 @@ export function startWatcher(folderPath) {
  */
 export function stopWatcher() {
   return post('/watcher/stop');
+}
+
+export function getWatcherStatus() {
+  return get('/watcher/status');
 }
