@@ -5,6 +5,7 @@ import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationPageRespo
 import com.watchserviceagent.watchservice_agent.alerts.dto.NotificationResponse;
 import com.watchserviceagent.watchservice_agent.settings.SettingsService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
@@ -114,6 +116,8 @@ public class NotificationService {
 
         if ("DANGER".equals(notification.getAiLabel())) {
             String email = settingsService.getAlertEmail(notification.getOwnerKey());
+            log.info("[NotificationService] DANGER 감지 — ownerKey={}, alertEmail='{}'",
+                    notification.getOwnerKey(), email == null ? "(null)" : email.isBlank() ? "(blank)" : email);
             if (email != null && !email.isBlank()) {
                 emailNotificationService.sendDangerAlert(email, notification);
             }

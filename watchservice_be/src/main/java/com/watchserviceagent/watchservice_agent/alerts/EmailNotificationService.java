@@ -41,11 +41,11 @@ public class EmailNotificationService {
     @Async
     public void sendDangerAlert(String recipientEmail, Notification notification) {
         if (recipientEmail == null || recipientEmail.isBlank()) {
-            log.debug("[EmailNotificationService] 수신 이메일 미설정 — 발송 건너뜀");
+            log.warn("[EmailNotificationService] 수신 이메일 미설정 — 발송 건너뜀");
             return;
         }
         if (smtpUsername == null || smtpUsername.isBlank()) {
-            log.debug("[EmailNotificationService] SMTP 계정 미설정 — 발송 건너뜀");
+            log.warn("[EmailNotificationService] SMTP 계정 미설정 — 발송 건너뜀");
             return;
         }
 
