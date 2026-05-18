@@ -321,9 +321,14 @@
   </div>
 
   <div class="notice">
-    <strong>⚠ macOS 첫 실행 안내</strong><br>
-    처음 실행 시 "개발자를 확인할 수 없습니다" 경고가 표시될 수 있습니다.<br>
-    앱 아이콘을 <strong>우클릭(또는 Control+클릭) → 열기</strong>를 선택하면 바로 실행됩니다.
+    <strong>⚠ macOS 첫 실행 안내</strong><br><br>
+    macOS 보안 정책으로 인해 "앱이 손상되었습니다" 경고가 표시될 수 있습니다.<br>
+    아래 순서대로 진행해 주세요.<br><br>
+    <strong>1단계.</strong> DMG를 열어 앱을 <strong>응용 프로그램</strong> 폴더로 드래그합니다.<br>
+    <strong>2단계.</strong> <strong>터미널</strong>을 열고 아래 명령어를 복사해 붙여넣은 후 Enter를 누릅니다.<br><br>
+    <code style="display:block;background:#0f172a;color:#86efac;padding:10px 14px;border-radius:6px;font-size:13px;letter-spacing:0.02em;margin:4px 0 10px;">xattr -cr /Applications/WatchService\ Agent.app</code>
+    <strong>3단계.</strong> 터미널을 닫고 앱을 실행합니다.<br><br>
+    <span style="color:#94a3b8;font-size:12px;">※ 이 명령어는 macOS가 인터넷 다운로드 파일에 자동으로 부여하는 격리 속성을 제거합니다. 앱 자체는 안전합니다.</span>
   </div>
 
   <footer>
