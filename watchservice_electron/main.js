@@ -97,9 +97,37 @@ function showError(reason) {
 // ──────────────────────────────────────────────
 // Spring Boot 시작
 // ──────────────────────────────────────────────
+// ──────────────────────────────────────────────
+// .env 파일 파싱 (시스템 환경변수 우선, .env는 미설정 키만 보완)
+// ──────────────────────────────────────────────
+function loadDotEnv() {
+  const candidates = app.isPackaged
+    ? [path.join(process.resourcesPath, '.env')]
+    : [path.join(__dirname, '..', 'watchservice_be', '.env')];
+
+  const extra = {};
+  for (const envPath of candidates) {
+    if (!fs.existsSync(envPath)) continue;
+    const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx <= 0) continue;
+      const k = trimmed.slice(0, idx).trim();
+      const v = trimmed.slice(idx + 1).trim();
+      if (k && !(k in process.env)) extra[k] = v;
+    }
+    console.log('[Electron] .env 로드:', envPath, '→', Object.keys(extra).join(', ') || '(없음)');
+    break;
+  }
+  return { ...process.env, ...extra };
+}
+
 function startSpringBoot() {
   const jarPath = getJarPath();
   const javaPath = getJavaPath();
+  const springEnv = loadDotEnv();
 
   // log.db, config/ 등 데이터 파일을 사용자 앱 데이터 폴더에 저장
   const dataDir = app.getPath('userData');
@@ -113,6 +141,7 @@ function startSpringBoot() {
     stdio: ['ignore', 'pipe', 'pipe'],
     detached: false,
     cwd: dataDir,
+    env: springEnv,
   });
 
   springProcess.stdout.on('data', (data) => {
