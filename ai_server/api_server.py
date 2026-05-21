@@ -3,7 +3,7 @@
 기능 : 랜섬웨어 패밀리 분류 AI 서버 (FastAPI)
       백엔드 Spring Boot의 AiService와 통신하여 실시간 파일 이벤트 분석을 수행한다.
 작성 날짜 : 2025/12/17/
-작성자 : 이상혁 (수정: 2026/01/18)
+작성자 : 김유민, 이상혁 (수정: 2026/01/18)
 - XGBoost JSON(model_xgb.json) 로드 지원 추가
 - classes.json 기반 클래스명 매핑 추가 (LabelEncoder 없어도 benign/ransomware 판정 가능)
 - XGBoost/LightGBM/Sklearn predict_proba 호환 유지
